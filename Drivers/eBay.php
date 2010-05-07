@@ -62,21 +62,10 @@ final class eBayPanhandler implements Panhandles {
             'keywords'             => urlencode(implode(' ', $keywords))
         );
 
-        $url_parameters = array();
-
-        foreach ($options as $key => $value) {
-            if ($value) {
-                $url_parameters[] = "$key=$value";
-            }
-            else {
-                $url_parameters[] = "$key";
-            }
-        }
-
         return sprintf(
             "%s?%s",
             $this->ebay_service_url,
-            implode('&', $url_parameters)
+            http_build_query($options)
         );
     }
 
