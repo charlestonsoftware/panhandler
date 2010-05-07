@@ -47,11 +47,15 @@ final class PanhandlerProduct {
 interface Panhandles {
 
     /**
-     * Accepts keywords as an array of strings, and returns an array
+     * Accepts $keywords as an array of strings, and returns an array
      * of PanhandlerProduct objects representing all of the products
      * matching those keywords.
+     *
+     * The $options array is a named array providing any driver
+     * specific settings.  Drivers which do not use the $options given
+     * are required to ignore them.
      */
-    public function get_products_by_keywords($keywords);
+    public function get_products_by_keywords($keywords, $options = null);
 
 }
 
