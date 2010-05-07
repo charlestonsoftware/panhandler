@@ -42,6 +42,13 @@ final class PanhandlerProduct {
 }
 
 /**
+ * Any driver which does not implement a method of the Panhandles
+ * interface should throw this exception with an appropriate error
+ * message.
+ */
+class PanhandlerNotSupported extends Exception {}
+
+/**
  * All drivers need to implement this.
  */
 interface Panhandles {
