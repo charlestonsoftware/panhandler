@@ -64,6 +64,18 @@ interface Panhandles {
      */
     public function get_products_by_keywords($keywords, $options = null);
 
+    /**
+     * Sets the maximum number of products to return from any method.
+     * Any method which returns a collection of PanhandlerProduct
+     * objects must not return more than the value given by this
+     * method.  Preferably they should not fetch more than that value
+     * either, to save on I/O.
+     *
+     * Drivers which do not or cannot control the number of returned
+     * products should throw a PanhandlerNotSupported exception.
+     */
+    public function set_maximum_product_count($count);
+
 }
 
 ?>
