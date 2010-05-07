@@ -39,7 +39,7 @@ final class eBayPanhandler implements Panhandles {
 
     //// INTERFACE METHODS /////////////////////////////////////
 
-    public function get_products_by_keywords($keywords) {
+    public function get_products_by_keywords($keywords, $options = null) {
         return $this->extract_products(
             $this->get_response_xml($keywords)
         );
