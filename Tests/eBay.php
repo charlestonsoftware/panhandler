@@ -12,9 +12,8 @@ $ebay     = new eBayPanhandler("CyberSpr-e973-4a45-ad8b-430a8ee3b190");
 $keywords = array('love hina', 'anime');
 $products = $ebay->get_products_by_keywords($keywords);
 
-for ($i = 0; $i < 20; $i++) {
-    $p = $products[$i];
-    echo ($i+1)," => ",$p->name,"\n";
+foreach ($products as $p) {
+    echo $p->name,"\n";
 }
 
 ?>

@@ -27,6 +27,12 @@ final class eBayPanhandler implements Panhandles {
      */
     private $app_id;
 
+    /**
+     * The number of products that we return.  The value can be
+     * changed by set_maximum_product_count().
+     */
+    private $maximum_product_count = 10;
+
     //// CONSTRUCTOR ///////////////////////////////////////////
 
     /**
@@ -45,6 +51,10 @@ final class eBayPanhandler implements Panhandles {
         );
     }
 
+    public function set_maximum_product_count($count) {
+        $this->maximum_product_count = $count;
+    }
+
     //// PRIVATE METHODS ///////////////////////////////////////
 
     /**
@@ -59,6 +69,7 @@ final class eBayPanhandler implements Panhandles {
             'SECURITY-APPNAME'     => $this->app_id,
             'RESPONSE-DATA-FORMAT' => 'XML',
             'REST-PAYLOAD'         => null,
+            'paginationInput.entriesPerPage' => $this->maximum_product_count,
             'keywords'             => urlencode(implode(' ', $keywords))
         );
 
