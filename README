@@ -1,0 +1,38 @@
+Panhandler
+==========
+
+
+
+Creating A Driver
+-----------------
+
+To create a new Panhandler driver you need to follow these steps.
+
+1. Create a branch called +driver/foo+ which forkes from +master+.
+Here +foo+ is an appropriate name for your driver, e.g. +driver/ebay+
+or +driver/commission-junction+.
+
+2. Create a driver file inside of the +Drivers+ directory.  This file
+should…
+
+  a. Requires the +Panhandler.php+ file from the parent directory.
+
+  b. Provide a driver class which implements the +Panhandles+
+  interface.  The driver *must* implement all methods defined by that
+  interface.  If there are any methods which the driver cannot support
+  for technical reasons, then that method *must* throw a
+  +PanhandlerNotSupported+ exception.
+
+3. Create a test script inside of the +Tests+ directory.  This file
+must be a PHP script that can be run from the command-line, and which
+demonstrates a functional usage of the driver.  For example, it may
+print out the titles of ten products based on keywords given at the
+command line.  There is no fixed format or methodology for the test
+scripts; they are only required to show other developers a working
+example of the driver class.  They should attempt to demonstrate as
+much of the +Panhandles+ interface as possible for that driver.
+
+Please carefully read the documentation for each method in the
++Panhandles+ interface.  They describe the types of values which
+should be returned, and provide suggestions about the ideal behavior
+that drivers should have.
