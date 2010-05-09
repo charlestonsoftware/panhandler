@@ -76,6 +76,18 @@ interface Panhandles {
      */
     public function set_maximum_product_count($count);
 
+    /**
+     * Sets the page of results to return.  Some product retailers
+     * allow pagination features with their search results.
+     * Therefore, it is possible to get product results in chunks of N
+     * products at a time.  The method takes an integer indicating
+     * which 'page' products to return, where the first page is
+     * numbered at one.
+     *
+     * This method should return no value.
+     */
+    public function set_results_page($page_number);
+
 }
 
 ?>
