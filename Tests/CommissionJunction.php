@@ -8,7 +8,8 @@ $cj_key = "00c7706a078e54be160c0044c825954982bbc36aa85831dff4899592b02ec9e8ccddf
 $keywords = array('cakes');
 
 $cj = new CommissionJunctionDriver($cj_key, $web_id);
-$cj->set_maximum_product_count(10);
+$cj->set_maximum_product_count(5);
+$cj->set_results_page(3);
 
 var_dump($cj->get_products_by_keywords($keywords));
 

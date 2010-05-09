@@ -36,6 +36,16 @@ final class CommissionJunctionDriver implements Panhandles {
      */
     private $maximum_product_count = 50;
 
+    /**
+     * The page number of results to return.  According to the
+     * Commission Junction documentation, the page count starts out
+     * zero.  But in practice this does not appear to be the case.
+     * Setting 'page-number' to zero in the request returns no
+     * results.  So we default to one as the value for the page
+     * number.
+     */
+    private $results_page = 1;
+
     //// CONSTRUCTOR ///////////////////////////////////////////
 
     public function __construct($cj_key, $cj_web_id) {
@@ -66,6 +76,11 @@ final class CommissionJunctionDriver implements Panhandles {
         $this->maximum_product_count = $count;
     }
 
+    public function set_results_page($page_number) {
+        $this->results_page = $page_number;
+    }
+
+
     //// PRIVATE METHODS ///////////////////////////////////////
 
     /**
@@ -80,6 +95,7 @@ final class CommissionJunctionDriver implements Panhandles {
             'serviceable-area' => 'US',
             'currency'         => 'USD',
             'records-per-page' => $this->maximum_product_count,
+            'page-number'      => $this->results_page,
             'keywords'         => implode(' ', $keywords)
         );
 
