@@ -33,6 +33,11 @@ final class eBayPanhandler implements Panhandles {
      */
     private $maximum_product_count = 10;
 
+    /**
+     * The page of results we want to show.
+     */
+    private $results_page = 1;
+
     //// CONSTRUCTOR ///////////////////////////////////////////
 
     /**
@@ -55,6 +60,10 @@ final class eBayPanhandler implements Panhandles {
         $this->maximum_product_count = $count;
     }
 
+    public function set_results_page($page_number) {
+        $this->results_page = $page_number;
+    }
+
     //// PRIVATE METHODS ///////////////////////////////////////
 
     /**
@@ -70,6 +79,7 @@ final class eBayPanhandler implements Panhandles {
             'RESPONSE-DATA-FORMAT' => 'XML',
             'REST-PAYLOAD'         => null,
             'paginationInput.entriesPerPage' => $this->maximum_product_count,
+            'paginationInput.pageNumber' => $this->results_page,
             'keywords'             => urlencode(implode(' ', $keywords))
         );
 
