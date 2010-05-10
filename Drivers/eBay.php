@@ -4,8 +4,6 @@
  * This file implements the Panhandler interface for eBay.
  */
 
-require_once('../Panhandler.php');
-
 if (function_exists('simplexml_load_string') === false) {
     die("SimpleXML must be installed to use eBayPanhandler");
 }

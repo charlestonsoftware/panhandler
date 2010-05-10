@@ -6,6 +6,7 @@
  * related products.
  */
 
+require_once('../Panhandler.php');
 require_once('../Drivers/eBay.php');
 
 $ebay     = new eBayPanhandler("CyberSpr-e973-4a45-ad8b-430a8ee3b190");
