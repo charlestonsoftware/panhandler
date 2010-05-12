@@ -134,6 +134,10 @@ final class eBayPanhandler implements Panhandles {
     private function extract_products($xml) {
         $products = array();
 
+        if ($xml === false || isset($xml->error)) {
+            return array();
+        }
+
         foreach ($xml->searchResult->item as $item) {
             $products[] = $this->convert_item($item);
         }
