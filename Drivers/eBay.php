@@ -123,7 +123,24 @@ final class eBayPanhandler implements Panhandles {
         $product->price      = (string) $item->sellingStatus->currentPrice;
         $product->web_urls   = array((string) $item->viewItemURL);
         $product->image_urls = array((string) $item->galleryURL);
+        $product->description = $this->create_description($item);
         return $product;
+    }
+
+    /**
+     * Takes information out of an <item> node and returns a string
+     * representing the description of the product, since we don't get
+     * a full one back from eBay.
+     */
+    private function create_description($item) {
+        return sprintf(
+            '<ul>
+               <li>Buy it Now: %s</li>
+               <li>Number of Bids: %d</li>
+             </ul>',
+            ((string) $item->listingInfo->buyItNowAvailable === 'true') ? 'Yes' : 'No',
+            (string) $item->listingInfo->bidCount
+        );
     }
 
     /**
