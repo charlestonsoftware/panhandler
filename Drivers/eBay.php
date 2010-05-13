@@ -36,6 +36,13 @@ final class eBayPanhandler implements Panhandles {
      */
     private $results_page = 1;
 
+    /**
+     * An array of seller IDs whose products we want to display.  Each
+     * ID in the array is a string.  This array can be empty if the
+     * products do not need to come from any particular seller.
+     */
+    private $sellers = null;
+
     //// CONSTRUCTOR ///////////////////////////////////////////
 
     /**
@@ -48,7 +55,18 @@ final class eBayPanhandler implements Panhandles {
 
     //// INTERFACE METHODS /////////////////////////////////////
 
+    /**
+     * Options:
+     *
+     *   'sellers' : An array of strings containing seller IDs.
+     *   Products returned will be restriced to these sellers.
+     *
+     */
     public function get_products_by_keywords($keywords, $options = null) {
+        if (isset($options['sellers'])) {
+            $this->sellers = $options['sellers'];
+        }
+
         return $this->extract_products(
             $this->get_response_xml($keywords)
         );
@@ -81,11 +99,31 @@ final class eBayPanhandler implements Panhandles {
             'keywords'             => urlencode(implode(' ', $keywords))
         );
 
+        $options = $this->apply_filters($options);
+
         return sprintf(
             "%s?%s",
             $this->ebay_service_url,
             http_build_query($options)
         );
+    }
+
+    /**
+     * Takes a hash of options used to build the request URL and adds
+     * any applicable item filters.  In this context, 'item filters'
+     * means the parameters that eBay looks for in the form of
+     * 'itemFilter(x)'.
+     */
+    private function apply_filters($options) {
+        if ($this->sellers) {
+            $options['itemFilter(0).name'] = 'Seller';
+
+            for ($i = 0; $i < count($this->sellers); $i++) {
+                $options["itemFilter(0).value($i)"] = $this->sellers[$i];
+            }
+        }
+
+        return $options;
     }
 
     /**
@@ -151,7 +189,7 @@ final class eBayPanhandler implements Panhandles {
     private function extract_products($xml) {
         $products = array();
 
-        if ($xml === false || isset($xml->error)) {
+        if ($this->is_valid_xml_response($xml) === false) {
             return array();
         }
 
@@ -162,6 +200,16 @@ final class eBayPanhandler implements Panhandles {
         return $products;
     }
 
+    /**
+     * Takes a SimpleXML object representing a response from eBay and
+     * returns a boolean indicating whether or not the response was
+     * successful.
+     */
+    private function is_valid_xml_response($xml) {
+        return (
+            $xml && (string) $xml->ack === 'Success'
+        );
+    }
 }
 
 ?>
