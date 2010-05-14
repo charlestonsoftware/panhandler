@@ -5,10 +5,10 @@
  */
 
 if (function_exists('simplexml_load_string') === false) {
-    die("SimpleXML must be installed to use eBayPanhandler");
+    throw new PanhandlerMissingRequirement("SimpleXML must be installed to use eBayPanhandler");
 }
 if (function_exists('curl_init') === false) {
-    die("cURL must be installed to use eBayPanhandler");
+    throw new PanhandlerMissingRequirement("cURL must be installed to use eBayPanhandler");
 }
 
 final class eBayPanhandler implements Panhandles {
