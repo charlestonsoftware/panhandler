@@ -49,6 +49,17 @@ final class PanhandlerProduct {
 class PanhandlerNotSupported extends Exception {}
 
 /**
+ * If a driver requires functionality that is not a standard part of
+ * PHP, then it should throw this exception after trying to load that
+ * functionality and failing.  For example, if a driver requires cURL:
+ *
+ *     if (function_exists('curl_init') === false) {
+ *         throw new PanhandlerMissingRequirement("cURL must be installed");
+ *     }
+ */
+class PanhandlerMissingRequirement extends Exception {}
+
+/**
  * All drivers need to implement this.
  */
 interface Panhandles {
