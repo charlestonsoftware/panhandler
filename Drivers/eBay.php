@@ -43,6 +43,12 @@ final class eBayPanhandler implements Panhandles {
      */
     private $sellers = null;
 
+    /**
+     * An array of any keywords we may be using to narrow our product
+     * search results.
+     */
+    private $keywords = null;
+
     //// CONSTRUCTOR ///////////////////////////////////////////
 
     /**
@@ -56,6 +62,18 @@ final class eBayPanhandler implements Panhandles {
     //// INTERFACE METHODS /////////////////////////////////////
 
     /**
+     * Takes the name of an eBay seller as a string and returns an
+     * array of all of the products on sale by that vendor.
+     */
+    public function get_products_from_vendor($vendor, $options = null) {
+        $this->sellers = array($vendor);
+
+        return $this->extract_products(
+            $this->get_response_xml()
+        );
+    }
+
+    /**
      * Options:
      *
      *   'sellers' : An array of strings containing seller IDs.
@@ -63,12 +81,14 @@ final class eBayPanhandler implements Panhandles {
      *
      */
     public function get_products_by_keywords($keywords, $options = null) {
+        $this->keywords = $keywords;
+
         if (isset($options['sellers'])) {
             $this->sellers = $options['sellers'];
         }
 
         return $this->extract_products(
-            $this->get_response_xml($keywords)
+            $this->get_response_xml()
         );
     }
 
@@ -83,21 +103,23 @@ final class eBayPanhandler implements Panhandles {
     //// PRIVATE METHODS ///////////////////////////////////////
 
     /**
-     * Takes an array of keywords and returns the URL we need to send
-     * an HTTP request to in order to get products matching those
-     * keywords.
+     * Returns the URL that we need to make an HTTP GET request to in
+     * order to get product information.
      */
-    private function make_request_url($keywords) {
+    private function make_request_url() {
         $options = array(
-            'OPERATION-NAME'       => 'findItemsByKeywords',
+            'OPERATION-NAME'       => 'findItemsAdvanced',
             'SERVICE-VERSION'      => '1.0.0',
             'SECURITY-APPNAME'     => $this->app_id,
             'RESPONSE-DATA-FORMAT' => 'XML',
             'REST-PAYLOAD'         => null,
             'paginationInput.entriesPerPage' => $this->maximum_product_count,
-            'paginationInput.pageNumber' => $this->results_page,
-            'keywords'             => urlencode(implode(' ', $keywords))
+            'paginationInput.pageNumber' => $this->results_page
         );
+
+        if ($this->keywords) {
+            $options['keywords'] = urlencode(implode(' ', $this->keywords));
+        }
 
         $options = $this->apply_filters($options);
 
@@ -140,13 +162,12 @@ final class eBayPanhandler implements Panhandles {
     }
 
     /**
-     * Returns a SimpleXML object representing the search results for
-     * the given keywords.
+     * Returns a SimpleXML object representing the search results.
      */
-    private function get_response_xml($keywords) {
+    private function get_response_xml() {
         return simplexml_load_string(
             $this->http_get(
-                $this->make_request_url($keywords)
+                $this->make_request_url()
             )
         );
     }
