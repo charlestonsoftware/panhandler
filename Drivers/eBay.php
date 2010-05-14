@@ -67,6 +67,7 @@ final class eBayPanhandler implements Panhandles {
      */
     public function get_products_from_vendor($vendor, $options = null) {
         $this->sellers = array($vendor);
+        $this->keywords = null;
 
         return $this->extract_products(
             $this->get_response_xml()
