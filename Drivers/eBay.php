@@ -79,19 +79,12 @@ final class eBayPanhandler implements Panhandles {
      * Takes the name of an eBay seller as a string and returns an
      * array of all of the products on sale by that vendor.
      *
-     * Options:
-     *
-     *   'affiliate_info' : A hash suitable to be assigned to
-     *   $affiliate_info as documented above.
-     *
+     * See parse_options() for details about $options.
      */
     public function get_products_from_vendor($vendor, $options = null) {
+        $this->parse_options($options);
         $this->sellers = array($vendor);
         $this->keywords = null;
-
-        if (isset($options['affiliate_info'])) {
-            $this->affiliate_info = $options['affiliate_info'];
-        }
 
         return $this->extract_products(
             $this->get_response_xml()
@@ -99,24 +92,13 @@ final class eBayPanhandler implements Panhandles {
     }
 
     /**
-     * Options:
+     * Fetches products matching the provided array of keywords.
      *
-     *   'sellers' : An array of strings containing seller IDs.
-     *   Products returned will be restriced to these sellers.
-     *
-     *   'affiliate_info' : A hash suitable to be assigned to
-     *   $affiliate_info as documented above.
-     *
+     * See parse_options() for details about $options.
      */
     public function get_products_by_keywords($keywords, $options = null) {
+        $this->parse_options($options);
         $this->keywords = $keywords;
-
-        if (isset($options['sellers'])) {
-            $this->sellers = $options['sellers'];
-        }
-        if (isset($options['affiliate_info'])) {
-            $this->affiliate_info = $options['affiliate_info'];
-        }
 
         return $this->extract_products(
             $this->get_response_xml()
@@ -132,6 +114,30 @@ final class eBayPanhandler implements Panhandles {
     }
 
     //// PRIVATE METHODS ///////////////////////////////////////
+
+    /**
+     * Called by the interface methods which take an $options hash.
+     * This method sets the appropriate private members of the object
+     * based on the contents of hash.  It looks for the keys
+     *
+     *     affiliate_info
+     *     sellers
+     *
+     * and assigns the value to the private members with the same
+     * names.  See the documentation for each of those members for a
+     * description of their acceptable values, which this method
+     * does not try to enforce.
+     *
+     * Returns no value.
+     */
+    private function parse_options($options) {
+        if (isset($options['affiliate_info'])) {
+            $this->affiliate_info = $options['affiliate_info'];
+        }
+        if (isset($options['sellers'])) {
+            $this->sellers = $options['sellers'];
+        }
+    }
 
     /**
      * Returns the URL that we need to make an HTTP GET request to in
