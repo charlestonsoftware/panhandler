@@ -63,6 +63,15 @@ final class eBayPanhandler implements Panhandles {
      */
     private $affiliate_info = null;
 
+    /**
+     * A string representing any sorting to apply to the search.  For
+     * details on the possible values, see the documentation at
+     *
+     *     http://developer.ebay.com/DevZone/finding/CallRef/types/SortOrderType.html
+     *
+     */
+    private $sort_order = null;
+
     //// CONSTRUCTOR ///////////////////////////////////////////
 
     /**
@@ -122,6 +131,7 @@ final class eBayPanhandler implements Panhandles {
      *
      *     affiliate_info
      *     sellers
+     *     sort_order
      *
      * and assigns the value to the private members with the same
      * names.  See the documentation for each of those members for a
@@ -136,6 +146,9 @@ final class eBayPanhandler implements Panhandles {
         }
         if (isset($options['sellers'])) {
             $this->sellers = $options['sellers'];
+        }
+        if (isset($options['sort_order'])) {
+            $this->sort_order = $options['sort_order'];
         }
     }
 
@@ -156,6 +169,10 @@ final class eBayPanhandler implements Panhandles {
 
         if ($this->keywords) {
             $options['keywords'] = urlencode(implode(' ', $this->keywords));
+        }
+
+        if ($this->sort_order) {
+            $options['sortOrder'] = $this->sort_order;
         }
 
         $options = $this->apply_filters($options);
