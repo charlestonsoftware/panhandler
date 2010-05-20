@@ -42,6 +42,20 @@ final class PanhandlerProduct {
 }
 
 /**
+ * This is an extremely simple class that basically serves as an easy
+ * way of detecting returned errors by using is_a(). Constructor takes
+ * a single param which should be a string containting the error
+ * message.
+ */
+final class PanhandlerError {
+  public $message;
+
+  public function __construct($message) {
+    $this->message = $message;
+  }
+}
+
+/**
  * Any driver which does not implement a method of the Panhandles
  * interface should throw this exception with an appropriate error
  * message.
