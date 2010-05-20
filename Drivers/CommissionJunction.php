@@ -27,22 +27,45 @@ final class CommissionJunctionDriver implements Panhandles {
     private $cj_web_id;
 
     /**
-     * Maximum number of results to return.  This value is set by
-     * calling set_maximum_product_count().  Comission Junction does
-     * not allow this value to be greater than 1,000.  If it is larger
-     * than that, then only 1,000 results will be returned.
+     * This holds all of our default values, as well as a list of the
+     * parameters that the CJ api can accept.
      */
-    private $maximum_product_count = 50;
+    private $defaults = array(
+                              'advertiser-ids' => 'joined',
+                              'keywords' => '',
+                              'serviceable-area' => 'US',
+                              'isbn' => '',
+                              'upc' => '',
+                              'manufacturer-name' => '',
+                              'manufacturer-sku' => '',
+                              'advertiser-sku' => '',
+                              'low-price' => '',
+                              'high-price' => '',
+                              'low-sale-price' => '',
+                              'high-sale-price' => '',
+                              'currency' => 'USD',
+                              'sort-by' => '',
+                              'sort-order' => '',
 
-    /**
-     * The page number of results to return.  According to the
-     * Commission Junction documentation, the page count starts out
-     * zero.  But in practice this does not appear to be the case.
-     * Setting 'page-number' to zero in the request returns no
-     * results.  So we default to one as the value for the page
-     * number.
-     */
-    private $results_page = 1;
+                              /**
+                               * The page number of results to return.  According to the
+                               * Commission Junction documentation, the page count starts out
+                               * zero.  But in practice this does not appear to be the case.
+                               * Setting 'page-number' to zero in the request returns no
+                               * results.  So we default to one as the value for the page
+                               * number.
+                               */
+                              'page-number' => '1',
+
+                              /**
+                               * Maximum number of results to return.  This value is set by
+                               * calling set_maximum_product_count().  Comission Junction does
+                               * not allow this value to be greater than 1,000.  If it is larger
+                               * than that, then only 1,000 results will be returned.
+                               */
+                              'records-per-page' => '50',
+                              );
+
 
     //// CONSTRUCTOR ///////////////////////////////////////////
 
@@ -53,29 +76,42 @@ final class CommissionJunctionDriver implements Panhandles {
 
     //// INTERFACE METHODS /////////////////////////////////////
 
+    public function get_products_from_vendor($vendor, $options = array()) {
+
+      return $this->get_products(array_merge(
+                                             array('advertiser-ids' => $vendor),
+                                             $options
+                                             ));
+    }
+
     /**
      * $options can include 'advertiser-ids', whose value should be a
      * string of advertiser IDs separated by commas.
      */
-    public function get_products_by_keywords($keywords, $options = null) {
-        $advertisers = @$options['advertiser-ids']
-            or $advertisers = array();
+    public function get_products_by_keywords($keywords, $options = array()) {
 
-        return $this->extract_products(
-            simplexml_load_string(
-                $this->query_for_products(
-                    $this->make_request_url($keywords, $advertisers)
-                )
-            )
-        );
+      return $this->get_products(array_merge(
+                                             array('keywords' => implode(',', $keywords)),
+                                             $options
+                                             ));
+    }
+
+    public function get_products($options = null) {
+      return $this->extract_products(
+                                     simplexml_load_string(
+                                                           $this->query_for_products(
+                                                                                     $this->make_request_url($options)
+                                                                                     )
+                                                           )
+                                     );
     }
 
     public function set_maximum_product_count($count) {
-        $this->maximum_product_count = $count;
+      $this->defaults['records-per-page'] = $count;
     }
 
     public function set_results_page($page_number) {
-        $this->results_page = $page_number;
+      $this->defaults['page_number'] = $count;
     }
 
 
@@ -87,28 +123,25 @@ final class CommissionJunctionDriver implements Panhandles {
      * search for, and an optional array of advertiser IDs to use in
      * order to restrict the search.
      */
-    private function make_request_url($keywords, $advertisers = array()) {
-        $parameters = array(
-            'website-id'       => $this->cj_web_id,
-            'serviceable-area' => 'US',
-            'currency'         => 'USD',
-            'records-per-page' => $this->maximum_product_count,
-            'page-number'      => $this->results_page,
-            'keywords'         => implode(' ', $keywords)
-        );
+    private function make_request_url($options) {
+      foreach ($this->defaults as $key=>$value) {
+        $parameters[$key] = $options[$key] or
+          $parameters[$key] = get_option('api_'.$key) or
+          $parameters[$key] = $value or
+          $parameters[$key] = null;
+      }
 
-        if (count($advertisers)) {
-            $parameters = array_merge(
-                $parameters,
-                array('advertiser-ids' => implode(' ', $advertisers))
-            );
-        }
 
-        return sprintf(
-            '%s?%s',
-            $this->cj_search_url,
-            http_build_query($parameters)
-        );
+      $parameters = array_merge(
+                                $parameters,
+                                array('website-id' => $this->cj_web_id)
+                                );
+
+      return sprintf(
+                     '%s?%s',
+                     $this->cj_search_url,
+                     http_build_query($parameters)
+                     );
     }
 
     /**
@@ -144,7 +177,7 @@ final class CommissionJunctionDriver implements Panhandles {
         return $product;
     }
 
-    /**p
+    /**
      * Extracts all <product> nodes from search results and returns an
      * array of PanhandlerProduct objects representing the results.
      */
