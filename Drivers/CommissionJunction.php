@@ -1,17 +1,10 @@
 <?php
 
-class CommissionJunctionException extends Exception {
-  public function __construct($message) {
-    parent::__construct($message);
-  }
-}
-
-
 if (function_exists('curl_init') === false) {
-  throw new CommissionJunctionException('cURL must be installed to use the Commission Junction driver.');
+  throw new PanhandlerMissingRequirement('cURL must be installed to use the Commission Junction driver.');
 }
 if (function_exists('simplexml_load_string') === false) {
-  throw new CommissionJunctionException('SimpleXML must be installed to use the Commission Junction driver.');
+  throw new PanhandlerMissingRequirement('SimpleXML must be installed to use the Commission Junction driver.');
 }
 
 final class CommissionJunctionDriver implements Panhandles {
