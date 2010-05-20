@@ -49,9 +49,31 @@ final class PanhandlerProduct {
 class PanhandlerNotSupported extends Exception {}
 
 /**
+ * If a driver requires functionality that is not a standard part of
+ * PHP, then it should throw this exception after trying to load that
+ * functionality and failing.  For example, if a driver requires cURL:
+ *
+ *     if (function_exists('curl_init') === false) {
+ *         throw new PanhandlerMissingRequirement("cURL must be installed");
+ *     }
+ */
+class PanhandlerMissingRequirement extends Exception {}
+
+/**
  * All drivers need to implement this.
  */
 interface Panhandles {
+
+    /**
+     * Accepts the identifier of a vendor as a string, and returns an
+     * array of PanhandlerProduct objects representing all of the
+     * items that vendor is selling.
+     *
+     * The $options array is a named array providing any driver
+     * specific settings.  Drivers which do not use the $options given
+     * are required to ignore them.
+     */
+    public function get_products_from_vendor($vendor, $options = null);
 
     /**
      * Accepts $keywords as an array of strings, and returns an array
