@@ -179,13 +179,19 @@ final class CommissionJunctionDriver implements Panhandles {
 
     /**
      * Extracts all <product> nodes from search results and returns an
-     * array of PanhandlerProduct objects representing the results.
+     * array of PanhandlerProduct objects representing the results. If
+     * an error message is encountered this will instead return a new
+     * PanhandlerError object containing the error message.
      */
     private function extract_products($xml) {
         $products = array();
 
         foreach ($xml->xpath("//product") as $product) {
             $products[] = $this->convert_product($product);
+        }
+
+        if ($error_message = $xml->xpath("//error-message")) {
+          return new PanhandlerError((string)$error_message[0]);
         }
 
         return $products;
