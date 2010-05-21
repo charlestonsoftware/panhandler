@@ -79,26 +79,23 @@ class PanhandlerMissingRequirement extends PanhandlerError {}
 interface Panhandles {
 
     /**
-     * Accepts the identifier of a vendor as a string, and returns an
-     * array of PanhandlerProduct objects representing all of the
-     * items that vendor is selling.
-     *
-     * The $options array is a named array providing any driver
-     * specific settings.  Drivers which do not use the $options given
-     * are required to ignore them.
+     * This is now the de-facto standard interface to get products
+     * from a driver, replacing get_products_from_vendor and
+     * get_products_by_keywords. As such, we need the drivers to be
+     * aware of the options they are receiving and they should throw a
+     * PanhandlerNotSupported exception for any options that they do
+     * not understand.
+     * $options is simply a named array of indeterminate keys and
+     * values.
      */
-    public function get_products_from_vendor($vendor, $options = null);
+    public function get_products($options = null);
 
     /**
-     * Accepts $keywords as an array of strings, and returns an array
-     * of PanhandlerProduct objects representing all of the products
-     * matching those keywords.
-     *
-     * The $options array is a named array providing any driver
-     * specific settings.  Drivers which do not use the $options given
-     * are required to ignore them.
+     * This should return an array list of all the options that the
+     * driver understands. This function will be used to filter out
+     * erroneous options before sending them to get_products().
      */
-    public function get_products_by_keywords($keywords, $options = null);
+    public function get_supported_options();
 
     /**
      * Sets the maximum number of products to return from any method.
