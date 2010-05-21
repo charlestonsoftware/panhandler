@@ -74,6 +74,19 @@ final class CommissionJunctionDriver implements Panhandles {
         $this->cj_web_id = $cj_web_id;
     }
 
+    // When wordpress processes shortcode attributes it will produce
+    // erroneous results if any of the attribute names contain
+    // dashes. However, the params that get sent to CJ are very specific
+    // and contain dashes, so this means that these attributes need to be
+    // written with underscores in the shortcodes and then converted to
+    // dashes for CJ.
+    function process_atts($atts) {
+      foreach ($atts as $key=>$value) {
+        $return_atts[str_replace('_', '-', $key)] = $value;
+      }
+      return $return_atts;
+    }
+
     //// INTERFACE METHODS /////////////////////////////////////
 
     public function get_products_from_vendor($vendor, $options = array()) {
@@ -100,7 +113,7 @@ final class CommissionJunctionDriver implements Panhandles {
       return $this->extract_products(
                                      simplexml_load_string(
                                                            $this->query_for_products(
-                                                                                     $this->make_request_url($options)
+                                                                                     $this->make_request_url($this->process_atts($options))
                                                                                      )
                                                            )
                                      );
