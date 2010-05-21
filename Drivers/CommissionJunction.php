@@ -87,6 +87,13 @@ final class CommissionJunctionDriver implements Panhandles {
       return $return_atts;
     }
 
+    function process_atts_reverse($atts) {
+      foreach ($atts as $key=>$value) {
+        $return_atts[str_replace('-', '_', $key)] = $value;
+      }
+      return $return_atts;
+    }
+
     //// INTERFACE METHODS /////////////////////////////////////
 
     public function get_products_from_vendor($vendor, $options = array()) {
@@ -107,6 +114,10 @@ final class CommissionJunctionDriver implements Panhandles {
                                              array('keywords' => implode(',', $keywords)),
                                              $options
                                              ));
+    }
+
+    public function get_supported_options() {
+      return array_keys($this->process_atts_reverse($this->defaults));
     }
 
     public function get_products($options = null) {
