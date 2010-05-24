@@ -26,6 +26,16 @@ final class eBayPanhandler implements Panhandles {
     private $app_id;
 
     /**
+     * Support options.
+     */
+    private $supported_options = array(
+        'affiliate_info',
+        'keywords',
+        'sellers',
+        'sort_order',
+    );
+
+    /**
      * The number of products that we return.  The value can be
      * changed by set_maximum_product_count().
      */
@@ -83,6 +93,13 @@ final class eBayPanhandler implements Panhandles {
     }
 
     //// INTERFACE METHODS /////////////////////////////////////
+
+    /**
+     * Returns the supported $options that get_products() accepts.
+     */
+    public function get_supported_options() {
+        return $this->supported_options;
+    }
 
     /**
      * Takes the name of an eBay seller as a string and returns an
