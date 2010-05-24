@@ -79,14 +79,13 @@ class PanhandlerMissingRequirement extends PanhandlerError {}
 interface Panhandles {
 
     /**
-     * This is now the de-facto standard interface to get products
-     * from a driver, replacing get_products_from_vendor and
-     * get_products_by_keywords. As such, we need the drivers to be
-     * aware of the options they are receiving and they should throw a
-     * PanhandlerNotSupported exception for any options that they do
-     * not understand.
-     * $options is simply a named array of indeterminate keys and
-     * values.
+     * Returns an array of PanhandlerProduct objects.  The $options
+     * argument is a hash of any driver-specific parameters to help
+     * narrow down the product search.
+     *
+     * The drivers need to be aware of the options they are receiving
+     * and they should throw a PanhandlerNotSupported exception for
+     * any options that they do not understand.
      */
     public function get_products($options = null);
 
