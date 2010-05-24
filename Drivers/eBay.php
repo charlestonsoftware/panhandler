@@ -144,28 +144,19 @@ final class eBayPanhandler implements Panhandles {
     /**
      * Called by the interface methods which take an $options hash.
      * This method sets the appropriate private members of the object
-     * based on the contents of hash.  It looks for the keys
-     *
-     *     affiliate_info
-     *     sellers
-     *     sort_order
-     *
-     * and assigns the value to the private members with the same
-     * names.  See the documentation for each of those members for a
-     * description of their acceptable values, which this method
-     * does not try to enforce.
+     * based on the contents of hash.  It looks for the keys in
+     * $supported_options * and assigns the value to the private
+     * members with the same names.  See the documentation for each of
+     * those members for a description of their acceptable values,
+     * which this method does not try to enforce.
      *
      * Returns no value.
      */
     private function parse_options($options) {
-        if (isset($options['affiliate_info'])) {
-            $this->affiliate_info = $options['affiliate_info'];
-        }
-        if (isset($options['sellers'])) {
-            $this->sellers = $options['sellers'];
-        }
-        if (isset($options['sort_order'])) {
-            $this->sort_order = $options['sort_order'];
+        foreach ($this->supported_options as $name) {
+            if (isset($options[$name])) {
+                $this->$name = $options[$name];
+            }
         }
     }
 
