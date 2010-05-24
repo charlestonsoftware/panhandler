@@ -34,12 +34,12 @@
  * pieces of data that we run across.
  */
 final class PanhandlerProduct {
-    public $name;
-    public $description;
-    public $currency;
-    public $price;
-    public $web_urls;
-    public $image_urls;
+    public $name;        // String
+    public $description; // String
+    public $currency;    // String
+    public $price;       // String
+    public $web_urls;    // Array of strings
+    public $image_urls;  // Array of strings
 }
 
 /**
