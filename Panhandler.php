@@ -47,7 +47,7 @@ final class PanhandlerProduct {
  * a single param which should be a string containting the error
  * message.
  */
-final class PanhandlerError {
+class PanhandlerError {
   public $message;
 
   public function __construct($message) {
@@ -60,7 +60,7 @@ final class PanhandlerError {
  * interface should throw this exception with an appropriate error
  * message.
  */
-class PanhandlerNotSupported extends Exception {}
+class PanhandlerNotSupported extends PanhandlerError {}
 
 /**
  * If a driver requires functionality that is not a standard part of
@@ -71,7 +71,7 @@ class PanhandlerNotSupported extends Exception {}
  *         throw new PanhandlerMissingRequirement("cURL must be installed");
  *     }
  */
-class PanhandlerMissingRequirement extends Exception {}
+class PanhandlerMissingRequirement extends PanhandlerError {}
 
 /**
  * All drivers need to implement this.
