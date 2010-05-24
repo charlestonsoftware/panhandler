@@ -36,6 +36,7 @@
 final class PanhandlerProduct {
     public $name;
     public $description;
+    public $currency;
     public $price;
     public $web_urls;
     public $image_urls;
