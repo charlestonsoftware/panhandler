@@ -198,6 +198,8 @@ final class CommissionJunctionDriver implements Panhandles {
         $product->web_urls    = array((string) $node->{'buy-url'});
         $product->image_urls  = array((string) $node->{'image-url'});
         $product->price       = (string) $node->price;
+        $product->currency    = (string) $node->currency;
+
         return $product;
     }
 
