@@ -101,31 +101,8 @@ final class eBayPanhandler implements Panhandles {
         return $this->supported_options;
     }
 
-    /**
-     * Takes the name of an eBay seller as a string and returns an
-     * array of all of the products on sale by that vendor.
-     *
-     * See parse_options() for details about $options.
-     */
-    public function get_products_from_vendor($vendor, $options = null) {
+    public function get_products($options = null) {
         $this->parse_options($options);
-        $this->sellers = array($vendor);
-        $this->keywords = null;
-
-        return $this->extract_products(
-            $this->get_response_xml()
-        );
-    }
-
-    /**
-     * Fetches products matching the provided array of keywords.
-     *
-     * See parse_options() for details about $options.
-     */
-    public function get_products_by_keywords($keywords, $options = null) {
-        $this->parse_options($options);
-        $this->keywords = $keywords;
-
         return $this->extract_products(
             $this->get_response_xml()
         );
