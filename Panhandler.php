@@ -44,9 +44,9 @@ final class PanhandlerProduct {
 
 /**
  * This is an extremely simple class that basically serves as an easy
- * way of detecting returned errors by using is_a(). Constructor takes
- * a single param which should be a string containting the error
- * message.
+ * way of detecting returned errors by using try-catch
+ * blocks. Constructor takes a single param which should be a string
+ * containting the error message.
  */
 class PanhandlerError {
   public $message;
