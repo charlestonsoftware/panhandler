@@ -48,7 +48,7 @@ final class PanhandlerProduct {
  * blocks. Constructor takes a single param which should be a string
  * containting the error message.
  */
-class PanhandlerError {
+class PanhandlerError extends Exception {
   public $message;
 
   public function __construct($message) {
