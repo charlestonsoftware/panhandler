@@ -123,6 +123,11 @@ final class eBayPanhandler implements Panhandles {
         $this->results_page = $page_number;
     }
 
+    public function set_default_option_values($options) {
+        $this->parse_options($options);
+    }
+
+
     //// PRIVATE METHODS ///////////////////////////////////////
 
     /**
