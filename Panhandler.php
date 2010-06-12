@@ -44,9 +44,9 @@ final class PanhandlerProduct {
 
 /**
  * This is an extremely simple class that basically serves as an easy
- * way of detecting returned errors by using is_a(). Constructor takes
- * a single param which should be a string containting the error
- * message.
+ * way of detecting returned errors by using try-catch
+ * blocks. Constructor takes a single param which should be a string
+ * containting the error message.
  */
 class PanhandlerError {
   public $message;
@@ -58,8 +58,8 @@ class PanhandlerError {
 
 /**
  * Any driver which does not implement a method of the Panhandles
- * interface should throw this exception with an appropriate error
- * message.
+ * interface, or does not recognize a driver option given to it,
+ * should throw this exception with an appropriate error message.
  */
 class PanhandlerNotSupported extends PanhandlerError {}
 
@@ -96,6 +96,23 @@ interface Panhandles {
      * erroneous options before sending them to get_products().
      */
     public function get_supported_options();
+
+    /**
+     * This function takes a hash containing default values to apply
+     * to driver options.  The keys of this hash must be elements
+     * found in the results of calling get_supported_options().  The
+     * values are those to be used if the options are not explicitly
+     * given values in the arguments to get_products().
+     *
+     * In a situation where a driver option has a default value and
+     * has a value in the parameter to get_products(), the value given
+     * to get_products() must take priority.
+     *
+     * Drivers are encouraged to throw a PanhandlerNotSupported
+     * exception if they are given default values for options they do
+     * not recognize.
+     */
+    public function set_default_option_values($options);
 
     /**
      * Sets the maximum number of products to return from any method.
