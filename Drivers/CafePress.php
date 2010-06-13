@@ -77,6 +77,15 @@ final class CafePressPanhandler implements Panhandles {
         return $this->supported_options;
     }
 
+
+    public function set_default_option_values($options) {
+        $this->parse_options($options);
+    }
+
+
+    /**
+     * Fetch products from CafePress.
+     */
     public function get_products($options = null) {
         foreach (array_keys($options) as $name) {
             if (in_array($name, $this->supported_options) === false) {
@@ -85,7 +94,7 @@ final class CafePressPanhandler implements Panhandles {
         }
 
         $this->parse_options($options);
-        
+
         return $this->extract_products(
               $this->get_response_xml()
         );
@@ -207,7 +216,7 @@ final class CafePressPanhandler implements Panhandles {
      *
      *     (preg_match('/<help>\s+<exception-message>(.*?)<\/exception-message>/',$xml,$error) > 0) ||
      */
-    private function is_valid_xml_response($xml) {        
+    private function is_valid_xml_response($xml) {
         return (
             $xml && (string) $xml->help === ''
           );
