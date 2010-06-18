@@ -27,6 +27,11 @@ final class CommissionJunctionDriver implements Panhandles {
     private $cj_web_id;
 
     /**
+     * These are the defaults as defined by the Wordpress user.
+     */
+    private $external_defaults;
+
+    /**
      * This holds all of our default values, as well as a list of the
      * parameters that the CJ api can accept.
      */
@@ -117,7 +122,9 @@ final class CommissionJunctionDriver implements Panhandles {
     }
 
     public function get_supported_options() {
-      return array_keys($this->process_atts_reverse($this->defaults));
+       return array_merge(
+               array_keys($this->defaults),
+               array_keys($this->process_atts_reverse($this->defaults)));
     }
 
     public function get_products($options = null) {
@@ -128,6 +135,10 @@ final class CommissionJunctionDriver implements Panhandles {
                                                                                      )
                                                            )
                                      );
+    }
+
+    public function set_default_option_values($options) {
+      $this->external_defaults = $options;
     }
 
     public function set_maximum_product_count($count) {
@@ -150,7 +161,7 @@ final class CommissionJunctionDriver implements Panhandles {
     private function make_request_url($options) {
       foreach ($this->defaults as $key=>$value) {
         $parameters[$key] = $options[$key] or
-          $parameters[$key] = get_option('api_'.$key) or
+          $parameters[$key] = $this->external_defaults[$key] or
           $parameters[$key] = $value or
           $parameters[$key] = null;
       }
