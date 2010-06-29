@@ -134,10 +134,10 @@ final class eBayDriver implements Panhandles {
      * Called by the interface methods which take an $options hash.
      * This method sets the appropriate private members of the object
      * based on the contents of hash.  It looks for the keys in
-     * $supported_options * and assigns the value to the private
-     * members with the same names.  See the documentation for each of
-     * those members for a description of their acceptable values,
-     * which this method does not try to enforce.
+     * $supported_options and assigns the value to the private members
+     * with the same names.  See the documentation for each of those
+     * members for a description of their acceptable values, which
+     * this method does not try to enforce.
      *
      * Returns no value.
      */
@@ -146,6 +146,10 @@ final class eBayDriver implements Panhandles {
             if (isset($options[$name])) {
                 $this->$name = $options[$name];
             }
+        }
+
+        if (is_array($this->keywords) === false) {
+            $this->keywords = preg_split('/[\s,]+/', $this->keywords);
         }
     }
 
