@@ -14,11 +14,11 @@ require_once("PHPUnit/Framework.php");
 require_once("Panhandler.php");
 require_once("Drivers/eBay.php");
 
-class eBayPanhandlerTest extends PHPUnit_Framework_TestCase {
+class eBayDriverTest extends PHPUnit_Framework_TestCase {
     protected $driver;
 
     protected function setUp() {
-        $this->driver = new eBayPanhandler("CyberSpr-e973-4a45-ad8b-430a8ee3b190");
+        $this->driver = new eBayDriver("CyberSpr-e973-4a45-ad8b-430a8ee3b190");
     }
 
     public function testMaximumProductCount() {

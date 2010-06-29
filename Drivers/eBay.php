@@ -11,7 +11,7 @@ if (function_exists('curl_init') === false) {
     throw new PanhandlerMissingRequirement("cURL must be installed to use eBayPanhandler");
 }
 
-final class eBayPanhandler implements Panhandles {
+final class eBayDriver implements Panhandles {
 
     //// PRIVATE MEMBERS ///////////////////////////////////////
 
