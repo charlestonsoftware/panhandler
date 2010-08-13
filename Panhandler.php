@@ -137,5 +137,3 @@ interface Panhandles {
     public function set_results_page($page_number);
 
 }
-
-?>
