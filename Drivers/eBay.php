@@ -30,7 +30,9 @@ final class eBayDriver implements Panhandles {
      */
     private $supported_options = array(
         'affiliate_info',
+        'product_count',
         'keywords',
+        'category_id',
         'sellers',
         'sort_order',
     );
@@ -158,6 +160,11 @@ final class eBayDriver implements Panhandles {
      * order to get product information.
      */
     private function make_request_url() {
+        
+        if ($this->product_count) {
+            self::set_maximum_product_count($this->product_count);
+        }
+        
         $options = array(
             'OPERATION-NAME'       => 'findItemsAdvanced',
             'SERVICE-VERSION'      => '1.0.0',
@@ -175,10 +182,20 @@ final class eBayDriver implements Panhandles {
         if ($this->sort_order) {
             $options['sortOrder'] = $this->sort_order;
         }
+        
+        if ($this->category_id) {
+            $options['categoryId'] = $this->category_id;
+        }
 
         $options = $this->apply_filters($options);
         $options = $this->apply_affiliate_info($options);
 
+        echo sprintf(
+            "%s?%s",
+            $this->ebay_service_url,
+            http_build_query($options)
+        );
+        
         return sprintf(
             "%s?%s",
             $this->ebay_service_url,
@@ -214,12 +231,10 @@ final class eBayDriver implements Panhandles {
      * 'itemFilter(x)'.
      */
     private function apply_filters($options) {
+        var_dump($this->sellers);
         if ($this->sellers) {
             $options['itemFilter(0).name'] = 'Seller';
-
-            for ($i = 0; $i < count($this->sellers); $i++) {
-                $options["itemFilter(0).value($i)"] = $this->sellers[$i];
-            }
+            $options["itemFilter(0).value(0)"] = $this->sellers;
         }
 
         return $options;
