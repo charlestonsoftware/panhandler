@@ -104,12 +104,14 @@ final class eBayDriver implements Panhandles {
     }
 
     public function get_products($options = null) {
-        foreach (array_keys($options) as $name) {
-            if (in_array($name, $this->supported_options) === false) {
-                throw new PanhandlerNotSupported("Received unsupported option $name");
+        if ($options) {
+            foreach (array_keys($options) as $name) {
+                if (in_array($name, $this->supported_options) === false) {
+                    throw new PanhandlerNotSupported("Received unsupported option $name");
+                }
             }
         }
-
+    
         $this->parse_options($options);
 
         return $this->extract_products(
