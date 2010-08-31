@@ -191,12 +191,6 @@ final class eBayDriver implements Panhandles {
 
         $options = $this->apply_filters($options);
         $options = $this->apply_affiliate_info($options);
-
-        echo sprintf(
-            "%s?%s",
-            $this->ebay_service_url,
-            http_build_query($options)
-        );
         
         return sprintf(
             "%s?%s",
@@ -233,7 +227,6 @@ final class eBayDriver implements Panhandles {
      * 'itemFilter(x)'.
      */
     private function apply_filters($options) {
-        var_dump($this->sellers);
         if ($this->sellers) {
             $options['itemFilter(0).name'] = 'Seller';
             $options["itemFilter(0).value(0)"] = $this->sellers;
