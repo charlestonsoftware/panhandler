@@ -8,7 +8,7 @@ if (function_exists('simplexml_load_string') === false) {
     throw new PanhandlerMissingRequirement("SimpleXML must be installed to use CafePressPanhandler");
 }
 
-final class CafePressPanhandler implements Panhandles {
+final class CafePressDriver implements Panhandles {
 
     //// PRIVATE MEMBERS ///////////////////////////////////////
 
