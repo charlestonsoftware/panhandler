@@ -87,13 +87,15 @@ final class CafePressDriver implements Panhandles {
      * Fetch products from CafePress.
      */
     public function get_products($options = null) {
-        foreach (array_keys($options) as $name) {
-            if (in_array($name, $this->supported_options) === false) {
-                throw new PanhandlerNotSupported("Received unsupported option $name");
+        if (! is_null($options) && ($options != '')) {
+            foreach (array_keys($options) as $name) {
+                if (in_array($name, $this->supported_options) === false) {
+                    throw new PanhandlerNotSupported("Received unsupported option $name");
+                }
             }
-        }
 
-        $this->parse_options($options);
+            $this->parse_options($options);
+        }
 
         return $this->extract_products(
               $this->get_response_xml()
