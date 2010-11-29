@@ -16,23 +16,28 @@ final class CafePressDriver implements Panhandles {
     /**
      * Support options.
      *
-     * api_key  - the APIKey given to us by CafePress
-     * return   - The number of products that we return.  
-     * wait_for - How long to wait before we time out a request to CafePress
+     * api_key      - the APIKey given to us by CafePress
+     * page         - The page number to be returned (CafePress, starting at 0)
+     * return       - The number of products that we return. (CafePress API "pageSize")
+     * section_id   - The CafePress Section ID (default 0 = root node)
+     * store_id     - The CafePress Store ID
+     * wait_for     - How long to wait before we time out a request to CafePress
      *
      */
     private $supported_options = array(
         'api_key',
         'http_handler',
+        'page',
         'return',
-        'store_id',
         'section_id',
+        'store_id',
         'wait_for'
     );
     private $api_key;
-    private $return     = 10;
-    private $store_id   = 10;
-    private $section_id = 'cybersprocket';
+    private $page       = 0;
+    private $return    = 10;
+    private $section_id = 0;
+    private $store_id   = 'cybersprocket';
     private $wait_for   = 30;
 
     /**
@@ -138,8 +143,10 @@ final class CafePressDriver implements Panhandles {
         $options = array(
             'v'             => $this->cafepress_api_version,
             'appKey'        => $this->api_key,
-            'storeId'       => $this->storeid,
-            'sectionId'     => $this->sectionid,
+            'page'          => $this->page,
+            'pageSize'      => $this->return,
+            'storeId'       => $this->store_id,
+            'sectionId'     => $this->section_id,
         );
 
         return sprintf(
