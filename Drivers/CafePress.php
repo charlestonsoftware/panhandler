@@ -189,8 +189,28 @@ final class CafePressDriver implements Panhandles {
                             array('timeout' => $this->wait_for) 
                             );            
 
+            // We got a result with no errors, parse it out.
+            //
             if ($this->http_result_is_ok($result)) {
                 return simplexml_load_string($result['body']);
+
+            // Catch some known problems and report on them.
+            //
+            } else {
+
+                // WordPress Error from the HTTP handler
+                //
+                if (is_a($result,'WP_Error')) {
+
+                    // Timeout, the wait_for setting is too low
+                    // 
+                    if ( preg_match('/Operation timed out/',$result->get_error_message()) ) {
+                        throw new PanhandlerError(
+                         'CafePress did not respond within '. $this->wait_for . ' seconds.<br/> '.
+                         'Ask the webmaster to check the "Wait For" setting in the admin panel.'
+                         );
+                    }
+                }
             }
         }
         return false;
