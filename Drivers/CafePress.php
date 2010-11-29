@@ -207,7 +207,7 @@ final class CafePressDriver implements Panhandles {
                     if ( preg_match('/Operation timed out/',$result->get_error_message()) ) {
                         throw new PanhandlerError(
                          'CafePress did not respond within '. $this->wait_for . ' seconds.<br/> '.
-                         'Ask the webmaster to check the "Wait For" setting in the admin panel.'
+                         'Ask the webmaster to increase the "Wait For" setting in the admin panel.'
                          );
                     }
                 }
