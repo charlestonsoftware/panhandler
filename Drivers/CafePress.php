@@ -27,8 +27,11 @@ final class CafePressDriver implements Panhandles {
      * Support options.
      */
     private $supported_options = array(
+        'api_key',
+        'http_handler',
         'storeid',
         'sectionid',
+        'wait_for'
     );
 
     /**
@@ -57,6 +60,10 @@ final class CafePressDriver implements Panhandles {
      */
     private $affiliate_info = null;
 
+    // How long to wait before we time out a request to CafePress
+    //
+    private $wait_for = 30;
+
 
     //// CONSTRUCTOR ///////////////////////////////////////////
 
@@ -64,8 +71,14 @@ final class CafePressDriver implements Panhandles {
      * We have to pass in the API Key that CafePress gives us, as we need
      * this to fetch product information.
      */
-    public function __construct($api_key) {
-        $this->api_key = $api_key;
+    public function __construct($options) {
+
+        // Set the properties of this object based on 
+        // the named array we got in on the constructor
+        //
+        foreach ($options as $name => $value) {
+            $this->$name = $value;
+        }
     }
 
     //// INTERFACE METHODS /////////////////////////////////////
@@ -152,28 +165,35 @@ final class CafePressDriver implements Panhandles {
         );
     }
 
-    /**
-     * Makes a GET request to the given URL and returns the result as
-     * a string.
-     *
-     * NOTE: file_get_contents barfs all over the place if the URL is invalid
-     * such as being pass an invalid string, so we'll need to trap that and
-     * send back an error message.  Cafepress sends back a 400 error.
-     *
-     */
-    private function http_get($url) {
-        return file_get_contents($url);
-    }
 
     /**
-     * Returns a SimpleXML object representing the search results.
+     * method (private): get_response_xml
+     *
+     * Parameters:
+     * None - builds url string from object properties previous set.
+     *
+     * Return Values:
+     * OK  : SimpleXML object representing the search results.
+     * NOK :Boolean false 
+     *      consistent with the return value of simplexml_load_string on fail.
+     *
      */
     private function get_response_xml() {
-        return simplexml_load_string(
-            $this->http_get(
-                $this->make_request_url()
-            )
-        );
+
+        // Fetch The organization info from the AMRS API
+        //
+        if (isset($this->http_handler)) {
+            $the_url =  $this->make_request_url();
+            $result = $this->http_handler->request( 
+                            $the_url, 
+                            array('timeout' => $this->wait_for) 
+                            );            
+
+            if ($this->http_result_is_ok($result)) {
+                return simplexml_load_string($result['body']);
+            }
+        }
+        return false;
     }
 
     /**
@@ -208,6 +228,33 @@ final class CafePressDriver implements Panhandles {
 
         return $products;
     }
+
+    /**
+     * method: http_result_is_ok()
+     *
+     * Determine if the http_request result that came back is valid.
+     *
+     * params:
+     *  $result (required, object) - the http result
+     *
+     * returns:
+     *   (boolean) - true if we got a result, false if we got an error
+     */
+    private function http_result_is_ok($result) {
+
+        // Yes - we can make a very long single logic check
+        // on the return, but it gets messy as we extend the
+        // test cases. This is marginally less efficient but
+        // easy to read and extend.
+        //
+        if ( is_a($result,'WP_Error') ) { return false; }
+        if ( !isset($result['body'])  ) { return false; }
+        if ( $result['body'] == ''    ) { return false; }
+        if ( isset($result['headers']['x-mashery-error-code']) ) { return false; }
+
+        return true;
+    }
+
 
     /**
      * Takes a SimpleXML object representing a response from CafePress and
