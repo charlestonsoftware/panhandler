@@ -180,7 +180,7 @@ final class CafePressDriver implements Panhandles {
      */
     private function get_response_xml() {
 
-        // Fetch The organization info from the AMRS API
+        // Fetch the XML data from CafePress
         //
         if (isset($this->http_handler)) {
             $the_url =  $this->make_request_url();
