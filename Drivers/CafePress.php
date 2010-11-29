@@ -12,57 +12,40 @@ final class CafePressDriver implements Panhandles {
 
     //// PRIVATE MEMBERS ///////////////////////////////////////
 
-    /**
-     * URL for invoking CafePress' services.
-     */
-    private $cafepress_service_url = 'http://open-api.cafepress.com/product.listByStoreSection.cp';
-    private $cafepress_api_version = '3';
-
-    /**
-     * The APIKey given to us by CafePress.
-     */
-    private $api_key;
 
     /**
      * Support options.
+     *
+     * api_key  - the APIKey given to us by CafePress
+     * return   - The number of products that we return.  
+     * wait_for - How long to wait before we time out a request to CafePress
+     *
      */
     private $supported_options = array(
         'api_key',
         'http_handler',
-        'storeid',
-        'sectionid',
+        'return',
+        'store_id',
+        'section_id',
         'wait_for'
     );
+    private $api_key;
+    private $return     = 10;
+    private $store_id   = 10;
+    private $section_id = 'cybersprocket';
+    private $wait_for   = 30;
 
     /**
-     * The store ID we want to show.
-     */
-    private $storeid = 'cybersprocket';
+     * Non-support options that make this driver go.
+     *
+     **/
 
-    /**
-     * The section ID we want to show.
-     */
-    private $sectionid = 0;
+    private $affiliate_info = null;         // A hash of affiliate information.
+    private $cafepress_api_version = '3';   // The CafePress API Version
+    private $results_page = 1;              // The page of results we want to show.
 
-    /**
-     * The number of products that we return.  The value can be
-     * changed by set_maximum_product_count().
-     */
-    private $maximum_product_count = 10;
-
-    /**
-     * The page of results we want to show.
-     */
-    private $results_page = 1;
-
-    /**
-     * A hash of affiliate information.
-     */
-    private $affiliate_info = null;
-
-    // How long to wait before we time out a request to CafePress
-    //
-    private $wait_for = 30;
+    // URL for invoking CafePress' services.
+    private $cafepress_service_url = 'http://open-api.cafepress.com/product.listByStoreSection.cp';
 
 
     //// CONSTRUCTOR ///////////////////////////////////////////
@@ -115,8 +98,9 @@ final class CafePressDriver implements Panhandles {
         );
     }
 
+
     public function set_maximum_product_count($count) {
-        $this->maximum_product_count = $count;
+        $this->return = $count;
     }
 
     public function set_results_page($page_number) {
