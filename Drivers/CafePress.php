@@ -48,6 +48,7 @@ final class CafePressDriver implements Panhandles {
     private $affiliate_info = null;         // A hash of affiliate information.
     private $cafepress_api_version = '3';   // The CafePress API Version
     private $results_page = 1;              // The page of results we want to show.
+    private $debugging = false;             // The plugin debuggin setting
 
     // URL for invoking CafePress' services.
     private $cafepress_service_url = 'http://open-api.cafepress.com/product.listByStoreSection.cp';
@@ -175,6 +176,9 @@ final class CafePressDriver implements Panhandles {
         //
         if (isset($this->http_handler)) {
             $the_url =  $this->make_request_url();
+            if ($this->debugging) {
+                print 'Requesting product list from:<br/>' . $the_url . '<br/>';
+            }
             $result = $this->http_handler->request( 
                             $the_url, 
                             array('timeout' => $this->wait_for) 
