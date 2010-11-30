@@ -145,8 +145,8 @@ final class CafePressDriver implements Panhandles {
      */
     private function make_request_url() {
 
-        // Page Size must be at least 1
-        if ($this->return < 1) { $this->return = 1; }
+        // Page Size fix if it was set to a blank space
+        if ($this->return == '' ) { $this->return = 10; }
 
         // Set CafePress API options
         $options = array(
