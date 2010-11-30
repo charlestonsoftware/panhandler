@@ -16,16 +16,18 @@ final class CafePressDriver implements Panhandles {
     /**
      * Support options.
      *
-     * api_key      - the APIKey given to us by CafePress
-     * page         - The page number to be returned (CafePress, starting at 0)
-     * return       - The number of products that we return. (CafePress API "pageSize")
-     * section_id   - The CafePress Section ID (default 0 = root node)
-     * store_id     - The CafePress Store ID
+     * api_key      - APIKey given to us by CafePress
+     * cj_pid       - Commission Junction Affiliate ID for the user
+     * page         - Page number to be returned (CafePress, starting at 0)
+     * return       - Number of products that we return. (CafePress API "pageSize")
+     * section_id   - CafePress Section ID (default 0 = root node)
+     * store_id     - CafePress Store ID
      * wait_for     - How long to wait before we time out a request to CafePress
      *
      */
     private $supported_options = array(
         'api_key',
+        'cj_pid',
         'http_handler',
         'page',
         'return',
@@ -34,8 +36,9 @@ final class CafePressDriver implements Panhandles {
         'wait_for'
     );
     private $api_key;
+    private $cj_pid     = '';
     private $page       = 0;
-    private $return    = 10;
+    private $return     = 10;
     private $section_id = 0;
     private $store_id   = 'cybersprocket';
     private $wait_for   = 30;
@@ -219,9 +222,22 @@ final class CafePressDriver implements Panhandles {
         $product            = new PanhandlerProduct();
         $product->name       = (string) $item['name'];
         $product->price      = (string) $item['sellPrice'];
-        $product->web_urls   = array((string) $item['storeUri']);
         $product->image_urls = array((string) $item['defaultProductUri']);
         $product->description = (string) $item['description'];
+
+        $product->web_urls   = array((string) $item['storeUri']);
+
+        // If we have a CJ PID set, update the web_urls to add the CJ tracking
+        //
+        if ($this->cj_pid != '') {
+            $cj_urls = array();
+            foreach ($product->web_urls as $cafepress_url) {
+               $cj_urls[] = sprintf('http://www.tkqlhce.com/click-%s-10467594?url=%s',
+                                    $this->cj_pid,$cafepress_url); 
+            }
+            $product->web_urls = $cj_urls;
+        }
+
         return $product;
     }
 
