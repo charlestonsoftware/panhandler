@@ -144,6 +144,11 @@ final class CafePressDriver implements Panhandles {
      * appKey=$x&storeId=$y&sectionId=$z&v=$v
      */
     private function make_request_url() {
+
+        // Page Size must be at least 1
+        if ($this->return < 1) { $this->return = 1; }
+
+        // Set CafePress API options
         $options = array(
             'v'             => $this->cafepress_api_version,
             'appKey'        => $this->api_key,
