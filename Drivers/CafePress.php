@@ -71,6 +71,11 @@ final class CafePressDriver implements Panhandles {
         foreach ($options as $name => $value) {
             $this->$name = $value;
         }
+
+        // Fix arrays coming in to storeID and sectionID
+        //
+        if (is_array($this->store_id))   { $this->store_id   = $this->store_id[0];  }
+        if (is_array($this->section_id)) { $this->section_id = $this->section_id[0];} 
     }
 
     //// INTERFACE METHODS /////////////////////////////////////
