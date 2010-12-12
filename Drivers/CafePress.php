@@ -185,7 +185,8 @@ final class CafePressDriver implements Panhandles {
         if (isset($this->http_handler)) {
             $the_url =  $this->make_request_url();
             if ($this->debugging) {
-                print 'Requesting product list from:<br/>' . $the_url . '<br/>';
+                print 'Requesting product list from:<br/>' .
+                      '<a href="' . $the_url . '">'.$the_url.'</a><br/>';
             }
             $result = $this->http_handler->request( 
                             $the_url, 
@@ -260,6 +261,9 @@ final class CafePressDriver implements Panhandles {
 
         foreach ($xml->product as $item) {
             $products[] = $this->convert_item($item);
+        }
+        if ($this->debugging) {
+            print count($products) . ' products have been located.<br/>';
         }
 
         return $products;
