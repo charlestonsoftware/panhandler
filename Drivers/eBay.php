@@ -286,8 +286,8 @@ final class eBayDriver implements Panhandles {
     private function create_description($item) {
         return sprintf(
             '<ul>
-               <li>Buy it Now: %s</li>
-               <li>Number of Bids: %d</li>
+               <li>' . __('Buy it Now',$this->prefix) . ': %s</li>
+               <li>' . __('Number of Bids',$this->prefix) . ': %d</li>
              </ul>',
             ((string) $item->listingInfo->buyItNowAvailable === 'true') ? 'Yes' : 'No',
             (string) $item->listingInfo->bidCount
