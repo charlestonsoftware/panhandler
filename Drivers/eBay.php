@@ -90,8 +90,13 @@ final class eBayDriver implements Panhandles {
      * We have to pass in the AppID that eBay gives us, as we need
      * this to fetch product information.
      */
-    public function __construct($app_id) {
-        $this->app_id = $app_id;
+    public function __construct($options) {
+        // Set the properties of this object based on 
+        // the named array we got in on the constructor
+        //
+        foreach ($options as $name => $value) {
+            $this->$name = $value;
+        }        
     }
 
     //// INTERFACE METHODS /////////////////////////////////////
