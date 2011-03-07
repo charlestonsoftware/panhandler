@@ -26,8 +26,10 @@ final class AmazonDriver implements Panhandles {
      */
     private $options = array (
         'debugging'         => false,
+        'http_hander'       => null,
         'locale'            => '',
-        'secret_access_key' => ''
+        'secret_access_key' => '',
+        'wait_for'          => 30
         );
 
     /**
@@ -38,7 +40,8 @@ final class AmazonDriver implements Panhandles {
      */
     private $supported_options = array(
         'locale',
-        'secret_access_key'
+        'secret_access_key',
+        'wait_for'
         );
 
     
@@ -87,8 +90,15 @@ final class AmazonDriver implements Panhandles {
     /**-------------------------------------
      ** method: get_products
      **
+     **
+     ** Process flow:
+     ** get_products <- extract_products <- get_reponse_xml
+     **                                                  ^
+     **                                                  |
+     **                                          buildAmazonQuery
+     **
      **/
-    public function get_products($prod_options = null) {
+    public function get_products($prod_options = null) {        
         if (! is_null($prod_options) && ($prod_options != '')) {
             foreach (array_keys($prod_options) as $name) {
                 if (in_array($name, $this->supported_options) === false) {
@@ -159,11 +169,11 @@ final class AmazonDriver implements Panhandles {
         //
         $request_parameters = array(
                 'secret_access_key' => $this->options['secret_access_key'],
-                'timestamp'         => date(c)
+                'timestamp'         => date('c')
             );        
 
         // We'll be using this string to generate our signature
-        $query       = http_build_query($this->request_parameters);
+        $query       = http_build_query($request_parameters);
         $hash_string = "GET\n" . $this->options['locale'] . "\n/onca/xml\n" . 
                         $query;
 
@@ -172,13 +182,13 @@ final class AmazonDriver implements Panhandles {
                             hash_hmac(
                                 'sha256', 
                                 $hash_string, 
-                                $this->request_params['secret_access_key'], 
+                                $request_parameters['secret_access_key'], 
                                 true
                                 )
                             );
 
         // Put together the final query
-        return 'http://' . $amazon_url . '/onca/xml?' .                 
+        return 'http://' . get_option(MPAMZ_PREFIX.'-amazon_site') . '/onca/xml?' .                 
                     $query . '&Signature=' . urlencode($hash);
     }
 
@@ -199,15 +209,15 @@ final class AmazonDriver implements Panhandles {
 
         // Fetch the XML data
         //
-        if (isset($this->http_handler)) {
+        if (isset($this->options['http_handler'])) {
             $the_url =  $this->buildAmazonQuery();
             if ($this->options['debugging']) {
                 print 'Requesting product list from:<br/>' .
                       '<a href="' . $the_url . '">'.$the_url.'</a><br/>';
             }
-            $result = $this->http_handler->request( 
+            $result = $this->options['http_handler']->request( 
                             $the_url, 
-                            array('timeout' => $this->wait_for) 
+                            array('timeout' => $this->options['wait_for']) 
                             );            
 
             // We got a result with no errors, parse it out.
@@ -232,6 +242,15 @@ final class AmazonDriver implements Panhandles {
                          );
                     }
                 }
+            }
+        
+        // No HTTP Handler
+        //
+        } else {
+            if ($this->options['debugging'] == 'on') {
+                _e('No HTTP Handler available, cannot communicate with remote server.',
+                    MPAMZ_PREFIX);
+                print "<br/>\n";
             }
         }
         return false;
