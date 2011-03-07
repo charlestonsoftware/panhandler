@@ -46,7 +46,9 @@ final class AmazonDriver implements Panhandles {
 
     //// CONSTRUCTOR ///////////////////////////////////////////
 
-    /**
+    /**-------------------------------------
+     ** method: constructor
+     **
      * We have to pass in the API Key, as we need
      * this to fetch product information.
      */
@@ -63,7 +65,9 @@ final class AmazonDriver implements Panhandles {
 
     //// INTERFACE METHODS /////////////////////////////////////
 
-    /**
+    /**-------------------------------------
+     ** method: get_supported_options
+     **
      * Returns the supported options that get_products() accepts.
      */
     public function get_supported_options() {
@@ -71,14 +75,19 @@ final class AmazonDriver implements Panhandles {
     }
 
 
+    /**-------------------------------------
+     ** method: set_default_option_values
+     **
+     **/
     public function set_default_option_values($default_options) {
         $this->parse_options($default_options);
     }
 
 
-    /**
-     * Fetch products
-     */
+    /**-------------------------------------
+     ** method: get_products
+     **
+     **/
     public function get_products($prod_options = null) {
         if (! is_null($prod_options) && ($prod_options != '')) {
             foreach (array_keys($prod_options) as $name) {
@@ -96,10 +105,18 @@ final class AmazonDriver implements Panhandles {
     }
 
 
+    /**-------------------------------------
+     ** method: set_maximum_product_count
+     **
+     **/
     public function set_maximum_product_count($count) {
         $this->return = $count;
     }
 
+    /**-------------------------------------
+     ** method: set_results_page
+     **
+     **/
     public function set_results_page($page_number) {
         $this->results_page = $page_number;
     }
