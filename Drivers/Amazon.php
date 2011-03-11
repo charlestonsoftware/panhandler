@@ -20,16 +20,27 @@ final class AmazonDriver implements Panhandles {
      * other settings we may need to make this driver go.
      *
      * debugging              - The debugging output flag.
-     * locale                 - Which country for the Amazon service URL?
+     * amazon_site            - Which country for the Amazon service URL?
      * secret_access_key      - Amazon provided key for the user
+     * wait_for               - HTTP Request timeout
      *
      */
     private $options = array (
         'debugging'         => false,
         'http_hander'       => null,
-        'locale'            => '',
+        
+        'amazon_site'            => '',
         'secret_access_key' => '',
-        'wait_for'          => 30
+        'wait_for'          => 30,        
+        
+         'AWSAcessKeyId'    => '',
+         'AssociateTag'     => '',
+         'Keywords'         => '',
+         'Operation'        => '',
+         'ResponseGroup'    => '',
+         'SearchIndex'      => '',
+         'Service'          => '',
+         'Timestamp'                
         );
 
     /**
@@ -39,10 +50,31 @@ final class AmazonDriver implements Panhandles {
      *
      */
     private $supported_options = array(
-        'locale',
+        'amazon_site',
         'secret_access_key',
         'wait_for'
         );
+    
+    /**
+     * Request Parameters
+     *
+     * List of options that are passed along to the Amazon API.
+     *
+     * This serves simply as a list of keys to lookup values in the
+     * options named array when building our Amazon Request.
+     *
+     */
+     private $request_params = array (
+         'AWSAccessKeyId',
+         'AssociateTag',
+         'Keywords',
+         'Operation',
+         'ResponseGroup',
+         'SearchIndex',
+         'Service',
+         'Timestamp',
+         'Version'
+         );
 
     
 
@@ -57,6 +89,10 @@ final class AmazonDriver implements Panhandles {
      */
     public function __construct($options) {
 
+        // Presets
+        //
+        $this->options['amazon_site'] = get_option(MPAMZ_PREFIX.'-amazon_site');
+        
         // Set the properties of this object based on 
         // the named array we got in on the constructor
         //
@@ -108,6 +144,21 @@ final class AmazonDriver implements Panhandles {
 
             $this->parse_options($prod_options);
         }
+        
+        
+        // Parameters We'll Accept...eventually
+        //
+        $this->options['SearchIndex']   = 'Books';
+        $this->options['Keywords']      = 'WordPress';
+        $this->options['AWSAccessKeyId']= '11BAEVC51K0CFFCQJE82';
+        $this->options['AssociateTag']  = 'cybsprlab-20';
+        
+        // This will be static for get_products
+        //
+        $this->options['Operation']     = 'ItemSearch';
+        $this->options['Service']       = 'AWSECommerceService';
+        $this->options['ResponseGroup'] = 'Medium,Images,Variations';
+        
 
         return $this->extract_products(
               $this->get_response_xml()
@@ -162,33 +213,45 @@ final class AmazonDriver implements Panhandles {
      */
     function buildAmazonQuery() {
         
-        // Make sure we actually have our necessary param        
+        // Make sure we actually have our necessary param
+        //        
         if ($this->options['secret_access_key'] == '') return false;
+        
+        // Set a last minute timestamp
+        //
+        $this->options['Timestamp'] = date('c');                
         
         // Map pre-set driver options into the request parameter array
         //
-        $request_parameters = array(
-                'secret_access_key' => $this->options['secret_access_key'],
-                'timestamp'         => date('c')
-            );        
-
+        $request_parameters = array();
+        foreach ($this->request_params as $option_key) {
+            if (isset($this->options[$option_key])  && 
+                $this->options[$option_key] != ''       ) {
+                $request_parameters[$option_key] = $this->options[$option_key];
+            }
+        }
+        
+        // Amazon requires the keys to be sorted
+        //
+        ksort($request_parameters);
+      
         // We'll be using this string to generate our signature
         $query       = http_build_query($request_parameters);
-        $hash_string = "GET\n" . $this->options['locale'] . "\n/onca/xml\n" . 
+        $hash_string = "GET\n" . $this->options['amazon_site'] . "\n/onca/xml\n" . 
                         $query;
-
+                       
         // Generate a sha256 HMAC using the private key
         $hash = base64_encode(
                             hash_hmac(
                                 'sha256', 
                                 $hash_string, 
-                                $request_parameters['secret_access_key'], 
+                                $this->options['secret_access_key'], 
                                 true
                                 )
                             );
-
+        
         // Put together the final query
-        return 'http://' . get_option(MPAMZ_PREFIX.'-amazon_site') . '/onca/xml?' .                 
+        return 'http://' . $this->options['amazon_site'] . '/onca/xml?' .                 
                     $query . '&Signature=' . urlencode($hash);
     }
 
@@ -223,6 +286,23 @@ final class AmazonDriver implements Panhandles {
             // We got a result with no errors, parse it out.
             //
             if ($this->http_result_is_ok($result)) {
+                
+                // 400 Error
+                //
+                if ($result['response']['code'] > 400) {
+                    throw new PanhandlerError($result['body']);
+                    if ($this->options['debugging'] == 'on') {
+                        print $result['body']."<br/>\n";
+                    }
+                    
+                    return '';
+                }                              
+                
+                
+                print "<pre>"; print_r($result); print "</pre>";
+                
+                // OK - Continue parsing
+                //
                 return simplexml_load_string($result['body']);
 
             // Catch some known problems and report on them.
