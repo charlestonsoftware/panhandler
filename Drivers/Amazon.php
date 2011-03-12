@@ -34,11 +34,11 @@ final class AmazonDriver implements Panhandles {
         'wait_for'          => 30,        
         
          'AWSAcessKeyId'    => '',
-         'AssociateTag'     => '',
-         'Keywords'         => '',
+         'AssociateTag'     => 'cybsprlab-20',
+         'keywords'         => 'WordPress',
          'Operation'        => '',
          'ResponseGroup'    => '',
-         'SearchIndex'      => '',
+         'SearchIndex'      => 'Books',
          'Service'          => '',
          'Timestamp'                
         );
@@ -52,7 +52,10 @@ final class AmazonDriver implements Panhandles {
     private $supported_options = array(
         'amazon_site',
         'secret_access_key',
-        'wait_for'
+        'wait_for',
+        'searchindex',
+        'keywords',
+        'associatetag'        
         );
     
     /**
@@ -63,17 +66,21 @@ final class AmazonDriver implements Panhandles {
      * This serves simply as a list of keys to lookup values in the
      * options named array when building our Amazon Request.
      *
+     * The mapping is mixed case because the WPCSL-generic lib always
+     * sends inline shortcode attributed in lower case, so we need to
+     * pick those up and map them to the mixed case Amazon expects.
+     *
      */
      private $request_params = array (
-         'AWSAccessKeyId',
-         'AssociateTag',
-         'Keywords',
-         'Operation',
-         'ResponseGroup',
-         'SearchIndex',
-         'Service',
-         'Timestamp',
-         'Version'
+         'AWSAccessKeyId'   => 'AWSAccessKeyId',
+         'AssociateTag'     => 'associatetag',
+         'Keywords'         => 'keywords',
+         'Operation'        => 'Operation',
+         'ResponseGroup'    => 'ResponseGroup',
+         'SearchIndex'      => 'searchindex',
+         'Service'          => 'Service',
+         'Timestamp'        => 'Timestamp',
+         'Version'          => 'Version'
          );
 
     
@@ -143,21 +150,13 @@ final class AmazonDriver implements Panhandles {
             }
 
             $this->parse_options($prod_options);
-        }
-        
-        
-        // Parameters We'll Accept...eventually
-        //
-        $this->options['SearchIndex']   = 'Books';
-        $this->options['Keywords']      = 'WordPress';
-        $this->options['AWSAccessKeyId']= '11BAEVC51K0CFFCQJE82';
-        $this->options['AssociateTag']  = 'cybsprlab-20';
+        }       
         
         // This will be static for get_products
         //
         $this->options['Operation']     = 'ItemSearch';
         $this->options['Service']       = 'AWSECommerceService';
-        $this->options['ResponseGroup'] = 'Medium,Images,Variations';
+        $this->options['ResponseGroup'] = 'Medium,Images,Variations,EditorialReview';
         
 
         return $this->extract_products(
@@ -224,10 +223,10 @@ final class AmazonDriver implements Panhandles {
         // Map pre-set driver options into the request parameter array
         //
         $request_parameters = array();
-        foreach ($this->request_params as $option_key) {
+        foreach ($this->request_params as $amazon_key => $option_key) {
             if (isset($this->options[$option_key])  && 
                 $this->options[$option_key] != ''       ) {
-                $request_parameters[$option_key] = $this->options[$option_key];
+                $request_parameters[$amazon_key] = $this->options[$option_key];
             }
         }
         
@@ -297,10 +296,7 @@ final class AmazonDriver implements Panhandles {
                     
                     return '';
                 }                              
-                
-                
-                print "<pre>"; print_r($result); print "</pre>";
-                
+                                
                 // OK - Continue parsing
                 //
                 return simplexml_load_string($result['body']);
@@ -344,16 +340,57 @@ final class AmazonDriver implements Panhandles {
      */
     private function convert_item($item) {
         $product                = new PanhandlerProduct();
-        $product->name          = (string) $item['name'];
-        $product->price         = (string) $item['sellPrice'];
-        $product->image_urls    = array((string) $item['defaultProductUri']);
-        $product->description   = (string) $item['description'];
-        $product->web_urls      = array((string) $item['storeUri']);
         
+        // Name
+        //
+        $product->name          = (string) $item->ItemAttributes->Title;
+        
+        // Price
+        //        
+        // This is the default dataset for pricing, but it doesn't
+        // always exist
+        if (isset($item->Offers->Offer->OfferListing->Price->FormattedPrice)) {
+            $product->price = $this->clean_price($item->Offers->Offer->OfferListing->Price->FormattedPrice);
+            
+        // Alternatively, we're going to get our pricing info from
+        // the LowestNewPrice offer
+        } elseif (isset($item->OfferSummary->LowestNewPrice->FormattedPrice)) {
+            $product->price = $this->clean_price($item->OfferSummary->LowestNewPrice->FormattedPrice);
+            
+        // Not Available?            
+        } else {
+            $product->price = 'This item is currently unavailable';
+        }
+        
+        // List Price
+        if (isset($item->ItemAttributes->ListPrice->FormattedPrice)) {
+            $product->listprice = $this->clean_price($item->ItemAttributes->ListPrice->FormattedPrice);
+        }        
+                
+        
+        // Image Sets (Small, Medium, Large)
+        //
+        $product->image_set = $this->formatImages($item);
+
+        // Default Image URLs
+        if (isset($product->image_set['default'])) {
+                $product->image_urls[]    = $product->image_set['default']['Medium'];
+        }                
+        
+        // Description
+        //
+        $product->description   = $this->formatDescription($item);
+
+        // Web URL
+        //
+        $product->web_urls      = array((string) $item->DetailPageURL);
+
         return $product;
     }
 
-    /**
+    /*---------------------------------------------------------
+     * method: extract_products()
+     * 
      * Takes a SimpleXML object representing all keyword search
      * results and returns an array of PanhandlerProduct objects
      * representing every item in the results.
@@ -365,16 +402,31 @@ final class AmazonDriver implements Panhandles {
             return array();
         }
 
-        foreach ($xml->product as $item) {
-            $products[] = $this->convert_item($item);
+        // Valid Results Returned
+        //
+        if ((string)$xml->Items->Request->IsValid === 'True') {
+            foreach ($xml->Items->Item as $item) {
+                $products[] = $this->convert_item($item);
+            }
+            
+            if ($this->options['debugging']) {
+                print count($products) . ' products have been located.<br/>';
+            }
+    
+            return $products;
+            
+        // Invalid Result
+        //
+        } else {
+            if ($this->options['debugging']) {
+                print 'Amazon reports the item request is invalid.<br/>';
+            }
         }
-        if ($this->options['debugging']) {
-            print count($products) . ' products have been located.<br/>';
-        }
-
-        return $products;
+        
+        
     }
 
+    
     /**
      * method: http_result_is_ok()
      *
@@ -416,5 +468,207 @@ final class AmazonDriver implements Panhandles {
             $xml && (string) $xml->help === ''
           );
     }
+    
+    
+    /*------------------------------------
+     * method: clean_price
+     * 
+     * clean up the price string with the pre-formatted dollar sign
+     */
+     private function clean_price($price_obj) {
+         $newprice = (int) preg_replace('/\D/','',$price_obj[0]);
+         return (string) ($newprice/100);
+     }
+
+
+    /*-------------------------------------
+     * method: formatDescription
+     * Create an Amazon Description
+     */
+    function formatDescription($item) {
+        $description = '';
+
+        // Add Reviews
+        //
+        $reviews = $this->formatReviews($item);        
+        foreach ($reviews as $review) {
+            $description .= $review;
+        }
+
+        // Add Details
+        //        
+        $details = $this->formatDetails($item);
+        foreach ($details as $detail => $value) {
+            $description .= "$detail: $value<br/>";
+        }
+        
+        
+        return $description;
+    }
+    
+    /**
+     * Creates a simple array of formatted values to be displayed in
+     * the Product Details section. These values are culled from
+     * various places and use numerous differing formats.
+     */
+    function formatReviews($item) {      
+        $reviews = array();
+        
+        if (isset($item->EditorialReviews)) {
+            foreach ($item->EditorialReviews as $review) {
+                $reviews[] = "<div class='review'>".
+                    "<div class='review_source'>".
+                        $review->EditorialReview->Source .
+                    "</div>" .
+                    "<div class='review_details'>" .
+                        $review->EditorialReview->Content .                    
+                    "</div>";
+            }
+        }
+
+        // Filter out values that are empty or null
+        $reviews = array_filter($reviews);
+
+        return $reviews;
+    }    
+    
+    
+    /**
+     * Creates a simple array of formatted values to be displayed in
+     * the Product Details section. These values are culled from
+     * various places and use numerous differing formats.
+     */
+    function formatDetails($item) {
+        if (isset($item->ItemAttributes->ItemDimensions->Height)) {
+            $dimensions[] =
+                ($item->ItemAttributes->ItemDimensions->Height / 100) . ' x ' .
+                ($item->ItemAttributes->ItemDimensions->Width / 100) . ' x ' .
+                ($item->ItemAttributes->ItemDimensions->Length / 100) . ' inches';
+        }
+
+        if ($this->convertWeight($item->ItemAttributes->ItemDimensions->Weight))
+            $dimensions[] = (string) $this->convertWeight($item->ItemAttributes->ItemDimensions->Weight);
+
+        if (isset($dimensions)) {
+            $details['item_dimensions'] = implode('; ',array_filter($dimensions));
+        }
+
+        $details['shipping_weight'] = $this->convertWeight($item->ItemAttributes->PackageDimensions->Weight);
+
+        $details['ASIN'] = (string) $item->ASIN;
+
+        // Filter out values that are empty or null
+        $details = array_filter($details);
+
+        return $details;
+    }    
+     
+     
+    /**
+     * Attempts to find pertinent image sets for an item and assigns a
+     * default set to use.
+     */
+    function formatImages($item) {
+        $imageSet = array();
+
+
+        // This is where the standard images will be coming from
+        if (isset($item->SmallImage)) {
+            $this->BuildImageArray($item, null, false, $imageSet);
+        }
+
+        // This will load in various image 'sets'
+        if (isset($item->ImageSets->ImageSet)) {
+            $sets = (array)$item->ImageSets;
+            $this->BuildImageArray($sets['ImageSet'], 'sets', true, $imageSet);
+        }
+
+        // Items with variations are set up a little differently so we
+        // have to go through them all.
+        if (isset($item->Variations)) {
+            foreach ($item->Variations->Item as $variation_item) {
+                $this->BuildImageArray($variation_item, null, false, $imageSet);
+            }
+        }
+
+        if (!isset($imageSet['default'])) {
+            $imageSet['default'] = false;
+        }
+        
+        return $imageSet;
+    }
+    
+    	/**    
+    	 * BuildImageArray()
+         *
+         * This is used to pull image URLs into an array and will also
+         * set a default if one has not already been set. Images will
+         * be put into a named array using an item's ASIN as an index
+         * by default unless one is provided.
+         *
+         * $new is the resource containing all of the images.
+         * $set_index is the optional array index that the extracted
+         * images will be placed in.
+         * $keey_array is used to determine whether or not to keep a
+         * single set within an array. By default, if there is only a
+         * single set it will be collapsed instead of using index[0].
+         *
+         **/
+        function BuildImageArray($new, $set_index = null, $keep_array = false, &$imageSet)  {
+            
+            // If no params are provided, we bail
+            if (!isset($new)) return false;
+            $set_index = $set_index or $set_index = (string)$new->ASIN;
+
+            // We're going to treat everything as if it were an array
+            // from this point on, so if it's not one already, we need
+            // to create one.
+            if (!is_array($new)) {
+                $new_array[] = $new;
+            } else $new_array = $new;
+
+            // Run through each 'item' and add it to the new set
+            $index = 0;
+            $newSet = array();
+            foreach ($new_array as $set) {
+                if (isset($set->SmallImage)) {
+                    $newSet[$index]['Small'] = (string) $set->SmallImage->URL;
+                    $newSet[$index]['Medium'] = (string) $set->MediumImage->URL;
+                    $newSet[$index]['Large'] = (string) $set->LargeImage->URL;
+                    $index++;
+                }
+            }
+
+            // Now we take the new set and append it to the proper
+            // index and set a default if one hasn't already been
+            // selected.
+            if (count($newSet) > 1 || $keep_array) {
+                $imageSet[$set_index] = $newSet;
+                $imageSet['default'] = $imageSet[$set_index][0];
+            } else if (count($newSet) > 0) {
+                $imageSet[$set_index] = $newSet[0];
+                $imageSet['default'] = $imageSet[$set_index];
+            }
+        }         
+
+    /**
+     * Amazon stores weight (for the US anyway) in hundreths of a
+     * pound. Here we convert this into either pounds or ounces if the
+     * value is less than a pound. Nothing is returned if the value is
+     * less than zero.
+     */
+    function convertWeight($value) {
+        if ($value > 0) {
+            if ($value / 100 < 1) {
+                $weight = (($value / 100) * 16) . ' ounces';
+            } else {
+                $weight = ($value /100) . ' pounds';
+            }
+            return $weight;
+        }
+    }
+        
+        
 }
+
 
