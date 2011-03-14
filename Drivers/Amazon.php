@@ -519,10 +519,11 @@ final class AmazonDriver implements Panhandles {
                 $reviews[] = "<div class='review'>".
                     "<div class='review_source'>".
                         $review->EditorialReview->Source .
-                    "</div>" .
+                    '</div>' .
                     "<div class='review_details'>" .
                         $review->EditorialReview->Content .                    
-                    "</div>";
+                    '</div>'.
+                    '</div>';
             }
         }
 
