@@ -23,6 +23,7 @@ final class CafePressDriver implements Panhandles {
      * section_id   - CafePress Section ID (default 0 = root node)
      * store_id     - CafePress Store ID
      * wait_for     - How long to wait before we time out a request to CafePress
+     * list_action  - Which CafePress API list action should we use (default = listByStoreSection)
      *
      */
     private $supported_options = array(
@@ -33,7 +34,8 @@ final class CafePressDriver implements Panhandles {
         'return',
         'section_id',
         'store_id',
-        'wait_for'
+        'wait_for',
+        'list_action'
     );
     private $api_key;
     private $cj_pid     = '';
@@ -42,6 +44,7 @@ final class CafePressDriver implements Panhandles {
     private $section_id = 0;
     private $store_id   = 'cybersprocket';
     private $wait_for   = 30;
+    private $list_action = 'listByStoreSection';
 
     /**
      * Non-support options that make this driver go.
@@ -71,6 +74,7 @@ final class CafePressDriver implements Panhandles {
         foreach ($options as $name => $value) {
             $this->$name = $value;
         }
+        $this->cafepress_service_url = 'http://open-api.cafepress.com/product.' . $this->list_action . '.cp';
 
     }
 
@@ -156,7 +160,7 @@ final class CafePressDriver implements Panhandles {
             'page'          => $this->page,
             'pageSize'      => $this->return,
             'storeId'       => $this->store_id,
-            'sectionId'     => $this->section_id,
+            'sectionId'     => $this->section_id,            
         );
 
         return sprintf(
