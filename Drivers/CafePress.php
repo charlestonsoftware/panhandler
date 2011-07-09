@@ -44,7 +44,7 @@ final class CafePressDriver implements Panhandles {
     private $section_id = 0;
     private $store_id   = 'cybersprocket';
     private $wait_for   = 30;
-    private $list_action = 'listByStoreSection';
+    private $list_action = 'product.listByStoreSection';
 
     /**
      * Non-support options that make this driver go.
@@ -57,7 +57,8 @@ final class CafePressDriver implements Panhandles {
     private $debugging = false;             // The plugin debuggin setting
 
     // URL for invoking CafePress' services.
-    private $cafepress_service_url = 'http://open-api.cafepress.com/product.listByStoreSection.cp';
+    //  http://open-api.cafepress.com/product.listByStoreSection.cp    
+    private $cafepress_service_url = 'http://open-api.cafepress.com/';
 
 
     //// CONSTRUCTOR ///////////////////////////////////////////
@@ -74,8 +75,6 @@ final class CafePressDriver implements Panhandles {
         foreach ($options as $name => $value) {
             $this->$name = $value;
         }
-        $this->cafepress_service_url = 'http://open-api.cafepress.com/product.' . $this->list_action . '.cp';
-
     }
 
     //// INTERFACE METHODS /////////////////////////////////////
@@ -148,24 +147,51 @@ final class CafePressDriver implements Panhandles {
      * http://open-api.cafepress.com/product.listByStoreSection.cp?
      * appKey=$x&storeId=$y&sectionId=$z&v=$v
      */
-    private function make_request_url() {
+    private function make_request_url($request_type = '') {
 
         // Page Size fix if it was set to a blank space
         if ($this->return == '' ) { $this->return = 10; }
+        
+        // Set request type
+        if ($request_type == '') {
+            $request_type = 'product.listByStoreSection';
+        }
 
-        // Set CafePress API options
+        // Options needed for all requests
         $options = array(
-            'v'             => $this->cafepress_api_version,
-            'appKey'        => $this->api_key,
-            'page'          => $this->page,
-            'pageSize'      => $this->return,
-            'storeId'       => $this->store_id,
-            'sectionId'     => $this->section_id,            
-        );
+                'v'             => $this->cafepress_api_version,
+                'appKey'        => $this->api_key,
+                );
+
+        //--------------------------
+        // Set CafePress API Options
+        
+        // Product Lookups
+        //
+        if ($request_type == 'product.listByStoreSection') {
+            $options = array_merge($options, 
+                array(
+                'page'          => $this->page,
+                'pageSize'      => $this->return,
+                'storeId'       => $this->store_id,
+                'sectionId'     => $this->section_id,
+                )
+            );
+            
+        // Merchandise Lookups
+        //
+        } else if ($request_type == 'merchandise.find') {
+            $options = array_merge($options, 
+                array(
+                'id'     => $this->CurrentProduct->merchandise_id,
+                )
+            );
+        }
 
         return sprintf(
-            "%s?%s",
+            "%s%s.cp?%s",
             $this->cafepress_service_url,
+            $request_type,
             http_build_query($options)
         );
     }
@@ -175,7 +201,7 @@ final class CafePressDriver implements Panhandles {
      * method (private): get_response_xml
      *
      * Parameters:
-     * None - builds url string from object properties previous set.
+     * request_type - the cafepress API request type
      *
      * Return Values:
      * OK  : SimpleXML object representing the search results.
@@ -183,12 +209,12 @@ final class CafePressDriver implements Panhandles {
      *      consistent with the return value of simplexml_load_string on fail.
      *
      */
-    private function get_response_xml() {
+    private function get_response_xml($request_type='') {
 
         // Fetch the XML data from CafePress
         //
         if (isset($this->http_handler)) {
-            $the_url =  $this->make_request_url();
+            $the_url =  $this->make_request_url($request_type);
             if ($this->debugging) {
                 print 'Requesting product list from:<br/>' .
                       '<a href="' . $the_url . '">'.$the_url.'</a><br/>';
@@ -231,10 +257,12 @@ final class CafePressDriver implements Panhandles {
      */
     private function convert_item($item) {
         $product            = new PanhandlerProduct();
-        $product->name       = (string) $item['name'];
-        $product->price      = (string) $item['sellPrice'];
-        $product->image_urls = array((string) $item['defaultProductUri']);
-        $product->description = (string) $item['description'];
+        $product->item              = (string) $item['id'];
+        $product->merchandise_id    = (string) $item['merchandiseId'];
+        $product->name              = (string) $item['name'];
+        $product->price             = (string) $item['sellPrice'];
+        $product->image_urls        = array((string) $item['defaultProductUri']);
+        $product->description       = (string) $item['description'];
 
         $product->web_urls   = array((string) $item['storeUri']);
 
@@ -248,6 +276,19 @@ final class CafePressDriver implements Panhandles {
             }
             $product->web_urls = $cj_urls;
         }
+        
+        // Get the merchandise info
+        //
+        $this->CurrentProduct = $product;
+        $merchandiseXML = $this->get_response_xml('merchandise.find');
+        
+        // Debugging Output
+        if ($this->debugging) {
+            print "Item: <pre>" . print_r($item, true) . "</pre>";
+            print "Merchandise: <pre>" . print_r($merchandiseXML, true) . "</pre>";
+        }
+        
+        
 
         return $product;
     }
@@ -262,6 +303,13 @@ final class CafePressDriver implements Panhandles {
 
         if ($this->is_valid_xml_response($xml) === false) {
             return array();
+        }
+        
+        // Debug Output
+        if ($this->debugging) {
+            print '<pre>';
+            //print_r($xml);
+            print '</pre>';
         }
 
         foreach ($xml->product as $item) {
