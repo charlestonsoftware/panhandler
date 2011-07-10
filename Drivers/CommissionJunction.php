@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * This file implements the Panhandler interface for Commission Junction.
+ */
+
 if (function_exists('curl_init') === false) {
   throw new PanhandlerMissingRequirement('cURL must be installed to use the Commission Junction driver.');
 }
@@ -12,64 +16,54 @@ final class CommissionJunctionDriver implements Panhandles {
     //// PRIVATE MEMBERS ///////////////////////////////////////
 
     /**
-     * The URL for Commission Junction's API.
+     * Private Driver Properties
+     *     
+     * cj_search_url    - The URL for Commission Junction's API.
+     * cj_key           - Our authorization key for Commission Junction.
+     * cj_web_id        - Our web ID for Commission Junction.
+     * external_defaults- These are the defaults as defined by the Wordpress user.
+     * defaults         - This holds all of our default values, as well as a list of the
+     *                    parameters that the CJ api can accept.
      */
     private $cj_search_url = 'https://product-search.api.cj.com/v2/product-search';
-
-    /**
-     * Our authorization key for Commission Junction.
-     */
     private $cj_key;
-
-    /**
-     * Our web ID for Commission Junction.
-     */
     private $cj_web_id;
-
-    /**
-     * These are the defaults as defined by the Wordpress user.
-     */
     private $external_defaults;
-
-    /**
-     * This holds all of our default values, as well as a list of the
-     * parameters that the CJ api can accept.
-     */
     private $defaults = array(
-                              'advertiser-ids' => 'joined',
-                              'keywords' => '',
-                              'serviceable-area' => 'US',
-                              'isbn' => '',
-                              'upc' => '',
-                              'manufacturer-name' => '',
-                              'manufacturer-sku' => '',
-                              'advertiser-sku' => '',
-                              'low-price' => '',
-                              'high-price' => '',
-                              'low-sale-price' => '',
-                              'high-sale-price' => '',
-                              'currency' => 'USD',
-                              'sort-by' => '',
-                              'sort-order' => '',
+                  'advertiser-ids' => 'joined',
+                  'keywords' => '',
+                  'serviceable-area' => 'US',
+                  'isbn' => '',
+                  'upc' => '',
+                  'manufacturer-name' => '',
+                  'manufacturer-sku' => '',
+                  'advertiser-sku' => '',
+                  'low-price' => '',
+                  'high-price' => '',
+                  'low-sale-price' => '',
+                  'high-sale-price' => '',
+                  'currency' => 'USD',
+                  'sort-by' => '',
+                  'sort-order' => '',
 
-                              /**
-                               * The page number of results to return.  According to the
-                               * Commission Junction documentation, the page count starts out
-                               * zero.  But in practice this does not appear to be the case.
-                               * Setting 'page-number' to zero in the request returns no
-                               * results.  So we default to one as the value for the page
-                               * number.
-                               */
-                              'page-number' => '1',
+                  /**
+                   * The page number of results to return.  According to the
+                   * Commission Junction documentation, the page count starts out
+                   * zero.  But in practice this does not appear to be the case.
+                   * Setting 'page-number' to zero in the request returns no
+                   * results.  So we default to one as the value for the page
+                   * number.
+                   */
+                  'page-number' => '1',
 
-                              /**
-                               * Maximum number of results to return.  This value is set by
-                               * calling set_maximum_product_count().  Comission Junction does
-                               * not allow this value to be greater than 1,000.  If it is larger
-                               * than that, then only 1,000 results will be returned.
-                               */
-                              'records-per-page' => '50',
-                              );
+                  /**
+                   * Maximum number of results to return.  This value is set by
+                   * calling set_maximum_product_count().  Comission Junction does
+                   * not allow this value to be greater than 1,000.  If it is larger
+                   * than that, then only 1,000 results will be returned.
+                   */
+                  'records-per-page' => '50',
+                  );
 
 
     //// CONSTRUCTOR ///////////////////////////////////////////
@@ -78,7 +72,7 @@ final class CommissionJunctionDriver implements Panhandles {
         $this->cj_key    = $cj_key;
         $this->cj_web_id = $cj_web_id;
     }
-
+    
     // When wordpress processes shortcode attributes it will produce
     // erroneous results if any of the attribute names contain
     // dashes. However, the params that get sent to CJ are very specific
@@ -236,4 +230,3 @@ final class CommissionJunctionDriver implements Panhandles {
 
 }
 
-?>
