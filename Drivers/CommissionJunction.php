@@ -11,7 +11,7 @@ if (function_exists('simplexml_load_string') === false) {
   throw new PanhandlerMissingRequirement('SimpleXML must be installed to use the Commission Junction driver.');
 }
 
-final class CommissionJunctionDriver implements Panhandles {
+final class CommissionJunctionPanhandler implements Panhandles {
 
     //// PRIVATE MEMBERS ///////////////////////////////////////
 
