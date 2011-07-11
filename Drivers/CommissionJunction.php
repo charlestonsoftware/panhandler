@@ -19,15 +19,15 @@ final class CommissionJunctionDriver implements Panhandles {
      * Private Driver Properties
      *     
      * cj_search_url    - The URL for Commission Junction's API.
-     * cj_key           - Our authorization key for Commission Junction.
-     * cj_web_id        - Our web ID for Commission Junction.
+     * api_key           - Our authorization key for Commission Junction.
+     * cj_webid        - Our web ID for Commission Junction.
      * external_defaults- These are the defaults as defined by the Wordpress user.
      * defaults         - This holds all of our default values, as well as a list of the
      *                    parameters that the CJ api can accept.
      */
     private $cj_search_url = 'https://product-search.api.cj.com/v2/product-search';
-    private $cj_key;
-    private $cj_web_id;
+    private $api_key;
+    private $cj_webid;
     private $external_defaults;
     private $defaults = array(
                   'advertiser-ids' => 'joined',
@@ -68,10 +68,21 @@ final class CommissionJunctionDriver implements Panhandles {
 
     //// CONSTRUCTOR ///////////////////////////////////////////
 
-    public function __construct($cj_key, $cj_web_id) {
-        $this->cj_key    = $cj_key;
-        $this->cj_web_id = $cj_web_id;
-    }
+    /**
+     * These are the 2 variables we used to get.
+     *  $this->cj_key    = $cj_key;     // NOW api_key
+     *  $this->cj_web_id = $cj_web_id;  // NOW cj_webid
+     *
+     */
+    public function __construct($options) {
+
+        // Set the properties of this object based on 
+        // the named array we got in on the constructor
+        //
+        foreach ($options as $name => $value) {
+            $this->$name = $value;
+        }
+    }    
     
     // When wordpress processes shortcode attributes it will produce
     // erroneous results if any of the attribute names contain
@@ -163,7 +174,7 @@ final class CommissionJunctionDriver implements Panhandles {
 
       $parameters = array_merge(
                                 $parameters,
-                                array('website-id' => $this->cj_web_id)
+                                array('website-id' => $this->cj_webid)
                                 );
 
       return sprintf(
@@ -184,7 +195,7 @@ final class CommissionJunctionDriver implements Panhandles {
 
         curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($handle, CURLOPT_HTTPHEADER,
-                    array('Authorization: ' . $this->cj_key));
+                    array('Authorization: ' . $this->api_key));
 
         $response = curl_exec($handle);
         curl_close($handle);
