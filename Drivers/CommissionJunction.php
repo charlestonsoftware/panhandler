@@ -91,8 +91,15 @@ final class CommissionJunctionDriver implements Panhandles {
     // written with underscores in the shortcodes and then converted to
     // dashes for CJ.
     function process_atts($atts) {
-      foreach ($atts as $key=>$value) {
-        $return_atts[str_replace('_', '-', $key)] = $value;
+      $return_atts = array();
+      if (is_array($atts)) {
+          foreach ($atts as $key=>$value) {
+            $return_atts[str_replace('_', '-', $key)] = $value;
+          }
+      }
+      if ($this->debugging) {
+          print __('DEBUG: shortcode attributes',$this->prefix) . "<br/>\n";
+          print_r($atts);
       }
       return $return_atts;
     }
@@ -129,17 +136,18 @@ final class CommissionJunctionDriver implements Panhandles {
     public function get_supported_options() {
        return array_merge(
                array_keys($this->defaults),
-               array_keys($this->process_atts_reverse($this->defaults)));
+               array_keys($this->process_atts_reverse($this->defaults))
+               );
     }
 
     public function get_products($options = null) {
       return $this->extract_products(
-                                     simplexml_load_string(
-                                                           $this->query_for_products(
-                                                                                     $this->make_request_url($this->process_atts($options))
-                                                                                     )
-                                                           )
-                                     );
+                 simplexml_load_string(
+                   $this->query_for_products(
+                     $this->make_request_url($this->process_atts($options))
+                     )
+                   )
+                 );
     }
 
     public function set_default_option_values($options) {
@@ -165,8 +173,8 @@ final class CommissionJunctionDriver implements Panhandles {
      */
     private function make_request_url($options) {
       foreach ($this->defaults as $key=>$value) {
-        $parameters[$key] = $options[$key] or
-          $parameters[$key] = $this->external_defaults[$key] or
+          $parameters[$key] = (isset($options[$key]) ? $options[$key] : false) or
+          $parameters[$key] = (isset($this->external_defaults[$key]) ? $this->external_defaults[$key] : false) or
           $parameters[$key] = $value or
           $parameters[$key] = null;
       }
