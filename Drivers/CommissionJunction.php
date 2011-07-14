@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * This file implements the Panhandler interface for Commission Junction.
+ */
+
 if (function_exists('curl_init') === false) {
   throw new PanhandlerMissingRequirement('cURL must be installed to use the Commission Junction driver.');
 }
@@ -12,73 +16,74 @@ final class CommissionJunctionDriver implements Panhandles {
     //// PRIVATE MEMBERS ///////////////////////////////////////
 
     /**
-     * The URL for Commission Junction's API.
+     * Private Driver Properties
+     *     
+     * cj_search_url    - The URL for Commission Junction's API.
+     * api_key           - Our authorization key for Commission Junction.
+     * cj_webid        - Our web ID for Commission Junction.
+     * external_defaults- These are the defaults as defined by the Wordpress user.
+     * defaults         - This holds all of our default values, as well as a list of the
+     *                    parameters that the CJ api can accept.
      */
     private $cj_search_url = 'https://product-search.api.cj.com/v2/product-search';
-
-    /**
-     * Our authorization key for Commission Junction.
-     */
-    private $cj_key;
-
-    /**
-     * Our web ID for Commission Junction.
-     */
-    private $cj_web_id;
-
-    /**
-     * These are the defaults as defined by the Wordpress user.
-     */
+    private $api_key;
+    private $cj_webid;
     private $external_defaults;
-
-    /**
-     * This holds all of our default values, as well as a list of the
-     * parameters that the CJ api can accept.
-     */
     private $defaults = array(
-                              'advertiser-ids' => 'joined',
-                              'keywords' => '',
-                              'serviceable-area' => 'US',
-                              'isbn' => '',
-                              'upc' => '',
-                              'manufacturer-name' => '',
-                              'manufacturer-sku' => '',
-                              'advertiser-sku' => '',
-                              'low-price' => '',
-                              'high-price' => '',
-                              'low-sale-price' => '',
-                              'high-sale-price' => '',
-                              'currency' => 'USD',
-                              'sort-by' => '',
-                              'sort-order' => '',
+                  'advertiser-ids' => 'joined',
+                  'keywords' => '',
+                  'serviceable-area' => 'US',
+                  'isbn' => '',
+                  'upc' => '',
+                  'manufacturer-name' => '',
+                  'manufacturer-sku' => '',
+                  'advertiser-sku' => '',
+                  'low-price' => '',
+                  'high-price' => '',
+                  'low-sale-price' => '',
+                  'high-sale-price' => '',
+                  'currency' => 'USD',
+                  'sort-by' => '',
+                  'sort-order' => '',
 
-                              /**
-                               * The page number of results to return.  According to the
-                               * Commission Junction documentation, the page count starts out
-                               * zero.  But in practice this does not appear to be the case.
-                               * Setting 'page-number' to zero in the request returns no
-                               * results.  So we default to one as the value for the page
-                               * number.
-                               */
-                              'page-number' => '1',
+                  /**
+                   * The page number of results to return.  According to the
+                   * Commission Junction documentation, the page count starts out
+                   * zero.  But in practice this does not appear to be the case.
+                   * Setting 'page-number' to zero in the request returns no
+                   * results.  So we default to one as the value for the page
+                   * number.
+                   */
+                  'page-number' => '1',
 
-                              /**
-                               * Maximum number of results to return.  This value is set by
-                               * calling set_maximum_product_count().  Comission Junction does
-                               * not allow this value to be greater than 1,000.  If it is larger
-                               * than that, then only 1,000 results will be returned.
-                               */
-                              'records-per-page' => '50',
-                              );
+                  /**
+                   * Maximum number of results to return.  This value is set by
+                   * calling set_maximum_product_count().  Comission Junction does
+                   * not allow this value to be greater than 1,000.  If it is larger
+                   * than that, then only 1,000 results will be returned.
+                   */
+                  'records-per-page' => '50',
+                  );
 
 
     //// CONSTRUCTOR ///////////////////////////////////////////
 
-    public function __construct($cj_key, $cj_web_id) {
-        $this->cj_key    = $cj_key;
-        $this->cj_web_id = $cj_web_id;
-    }
+    /**
+     * These are the 2 variables we used to get.
+     *  $this->cj_key    = $cj_key;     // NOW api_key
+     *  $this->cj_web_id = $cj_web_id;  // NOW cj_webid
+     *
+     */
+    public function __construct($options) {
 
+        // Set the properties of this object based on 
+        // the named array we got in on the constructor
+        //
+        foreach ($options as $name => $value) {
+            $this->$name = $value;
+        }
+    }    
+    
     // When wordpress processes shortcode attributes it will produce
     // erroneous results if any of the attribute names contain
     // dashes. However, the params that get sent to CJ are very specific
@@ -86,8 +91,15 @@ final class CommissionJunctionDriver implements Panhandles {
     // written with underscores in the shortcodes and then converted to
     // dashes for CJ.
     function process_atts($atts) {
-      foreach ($atts as $key=>$value) {
-        $return_atts[str_replace('_', '-', $key)] = $value;
+      $return_atts = array();
+      if (is_array($atts)) {
+          foreach ($atts as $key=>$value) {
+            $return_atts[str_replace('_', '-', $key)] = $value;
+          }
+      }
+      if ($this->debugging) {
+          print __('DEBUG: shortcode attributes',$this->prefix) . "<br/>\n";
+          print_r($atts);
       }
       return $return_atts;
     }
@@ -124,17 +136,18 @@ final class CommissionJunctionDriver implements Panhandles {
     public function get_supported_options() {
        return array_merge(
                array_keys($this->defaults),
-               array_keys($this->process_atts_reverse($this->defaults)));
+               array_keys($this->process_atts_reverse($this->defaults))
+               );
     }
 
     public function get_products($options = null) {
       return $this->extract_products(
-                                     simplexml_load_string(
-                                                           $this->query_for_products(
-                                                                                     $this->make_request_url($this->process_atts($options))
-                                                                                     )
-                                                           )
-                                     );
+                 simplexml_load_string(
+                   $this->query_for_products(
+                     $this->make_request_url($this->process_atts($options))
+                     )
+                   )
+                 );
     }
 
     public function set_default_option_values($options) {
@@ -160,8 +173,8 @@ final class CommissionJunctionDriver implements Panhandles {
      */
     private function make_request_url($options) {
       foreach ($this->defaults as $key=>$value) {
-        $parameters[$key] = $options[$key] or
-          $parameters[$key] = $this->external_defaults[$key] or
+          $parameters[$key] = (isset($options[$key]) ? $options[$key] : false) or
+          $parameters[$key] = (isset($this->external_defaults[$key]) ? $this->external_defaults[$key] : false) or
           $parameters[$key] = $value or
           $parameters[$key] = null;
       }
@@ -169,7 +182,7 @@ final class CommissionJunctionDriver implements Panhandles {
 
       $parameters = array_merge(
                                 $parameters,
-                                array('website-id' => $this->cj_web_id)
+                                array('website-id' => $this->cj_webid)
                                 );
 
       return sprintf(
@@ -190,7 +203,7 @@ final class CommissionJunctionDriver implements Panhandles {
 
         curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($handle, CURLOPT_HTTPHEADER,
-                    array('Authorization: ' . $this->cj_key));
+                    array('Authorization: ' . $this->api_key));
 
         $response = curl_exec($handle);
         curl_close($handle);
@@ -236,4 +249,3 @@ final class CommissionJunctionDriver implements Panhandles {
 
 }
 
-?>
