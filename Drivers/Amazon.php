@@ -98,7 +98,7 @@ final class AmazonDriver implements Panhandles {
 
         // Presets
         //
-        $this->options['amazon_site'] = get_option(MPAMZ_PREFIX.'-amazon_site');
+        $this->options['amazon_site'] = get_option(MP_AMZ_PREFIX.'-amazon_site');
         
         // Set the properties of this object based on 
         // the named array we got in on the constructor
@@ -325,7 +325,7 @@ final class AmazonDriver implements Panhandles {
         } else {
             if ($this->options['debugging'] == 'on') {
                 _e('No HTTP Handler available, cannot communicate with remote server.',
-                    MPAMZ_PREFIX);
+                    MP_AMZ_PREFIX);
                 print "<br/>\n";
             }
         }
