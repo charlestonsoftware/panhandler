@@ -202,7 +202,10 @@ final class eBayDriver implements Panhandles {
             $options['categoryId'] = $this->category_id;
         }
 
-        if (isset($this->search_description) && $this->search_description) {
+        if (isset($this->search_description)){
+            if (!$this->plus_pack_enabled) {
+                $this->search_description='false';
+            }
             $options['descriptionSearch'] = $this->search_description;
         }
 
