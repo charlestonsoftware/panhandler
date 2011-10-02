@@ -275,7 +275,7 @@ final class eBayDriver implements Panhandles {
                 $options[sprintf('itemFilter(%d).value(0)',$filterCount)] = $this->max_price;
                 $filterCount++;
             }            
-            if (isset($this->country_listed_in) && ($this->country_listed_in > 0)) {
+            if (isset($this->country_listed_in) && ($this->country_listed_in)) {
                 $options[sprintf('itemFilter(%d).name',$filterCount)] = 'ListedIn';
                 $options[sprintf('itemFilter(%d).value(0)',$filterCount)] = $this->country_listed_in;
                 $filterCount++;
