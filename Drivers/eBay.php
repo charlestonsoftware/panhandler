@@ -33,6 +33,7 @@ final class eBayDriver implements Panhandles {
         'product_count',
         'keywords',
         'category_id',
+        'search_description',
         'sellers',
         'sort_order',
     );
@@ -199,6 +200,10 @@ final class eBayDriver implements Panhandles {
         
         if ($this->category_id) {
             $options['categoryId'] = $this->category_id;
+        }
+
+        if (isset($this->search_description) && $this->search_description) {
+            $options['descriptionSearch'] = $this->search_description;
         }
 
         $options = $this->apply_filters($options);
