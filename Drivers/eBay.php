@@ -33,6 +33,8 @@ final class eBayDriver implements Panhandles {
         'product_count',
         'keywords',
         'category_id',
+        'min_price',
+        'max_price',
         'search_description',
         'sellers',
         'sort_order',
@@ -202,13 +204,17 @@ final class eBayDriver implements Panhandles {
             $options['categoryId'] = $this->category_id;
         }
 
-        if (isset($this->search_description)){
-            if (!$this->plus_pack_enabled) {
-                $this->search_description='false';
-            }
-            $options['descriptionSearch'] = $this->search_description;
+        
+        /*----------------------------
+         * Plus Pack Options
+         */
+        if ($this->plus_pack_enabled) {
+            if (isset($this->search_description)){
+                $options['descriptionSearch'] = $this->search_description;
+            }            
         }
-
+        
+        
         $options = $this->apply_filters($options);
         $options = $this->apply_affiliate_info($options);
         
@@ -247,9 +253,27 @@ final class eBayDriver implements Panhandles {
      * 'itemFilter(x)'.
      */
     private function apply_filters($options) {
+        $filterCount = 0;
         if ($this->sellers) {
-            $options['itemFilter(0).name'] = 'Seller';
-            $options["itemFilter(0).value(0)"] = $this->sellers;
+            $options[sprintf('itemFilter(%d).name',$filterCount)] = 'Seller';
+            $options[sprintf('itemFilter(%d).value(0)',$filterCount)] = $this->sellers;
+            $filterCount++;
+        }
+        
+        /*----------------------------
+         * Plus Pack Options
+         */
+        if ($this->plus_pack_enabled) {
+            if (isset($this->min_price) && ($this->min_price > 0)) {
+                $options[sprintf('itemFilter(%d).name',$filterCount)] = 'MinPrice';
+                $options[sprintf('itemFilter(%d).value(0)',$filterCount)] = $this->min_price;
+                $filterCount++;
+            }
+            if (isset($this->max_price) && ($this->max_price > 0)) {
+                $options[sprintf('itemFilter(%d).name',$filterCount)] = 'MaxPrice';
+                $options[sprintf('itemFilter(%d).value(0)',$filterCount)] = $this->max_price;
+                $filterCount++;
+            }            
         }
 
         return $options;
