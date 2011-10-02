@@ -30,6 +30,7 @@ final class eBayDriver implements Panhandles {
      */
     private $supported_options = array(
         'affiliate_info',
+        'country_listed_in',
         'product_count',
         'keywords',
         'category_id',
@@ -274,6 +275,11 @@ final class eBayDriver implements Panhandles {
                 $options[sprintf('itemFilter(%d).value(0)',$filterCount)] = $this->max_price;
                 $filterCount++;
             }            
+            if (isset($this->country_listed_in) && ($this->country_listed_in > 0)) {
+                $options[sprintf('itemFilter(%d).name',$filterCount)] = 'ListedIn';
+                $options[sprintf('itemFilter(%d).value(0)',$filterCount)] = $this->country_listed_in;
+                $filterCount++;
+            }
         }
 
         return $options;
