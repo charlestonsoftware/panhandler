@@ -91,7 +91,14 @@ final class eBayDriver implements Panhandles {
      * this to fetch product information.
      */
     public function __construct($options) {
-        // Set the properties of this object based on 
+
+        // Make sure we create all of these member variables so as to
+        // prevent php warnings on reference
+        foreach ($this->supported_options as $name) {
+            $this->$name = null;
+        }
+
+        // Set the properties of this object based on
         // the named array we got in on the constructor
         //
         foreach ($options as $name => $value) {
