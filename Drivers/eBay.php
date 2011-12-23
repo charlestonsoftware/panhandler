@@ -1,4 +1,12 @@
 <?php
+/************************************************************************
+*
+* file: Drivers/eBay.php
+*
+* The eBay Driver. 
+* 
+************************************************************************/
+
 
 /**
  * This file implements the Panhandler interface for eBay.
