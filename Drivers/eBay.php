@@ -392,7 +392,7 @@ final class eBayDriver implements Panhandles {
 
         $theDesc .= '</div><div class="csl_themes-row"></div>';
 
-//        $theDesc .= '<pre>' . print_r($item->listingInfo,true) . '</pre>';
+        //$theDesc .= '<pre>' . print_r($item,true) . '</pre>';
 
         // $theDesc .= '<pre>' . print_r($item,true) . '</pre>';
 
