@@ -219,9 +219,9 @@ final class eBayDriver implements Panhandles {
 
 
         /*----------------------------
-         * Plus Pack Options
+         * Pro Pack Options
          */
-        if ($this->plus_pack_enabled) {
+        if ($this->pro_pack_enabled) {
             if (isset($this->search_description)){
                 $options['descriptionSearch'] = $this->search_description;
             }
@@ -274,9 +274,9 @@ final class eBayDriver implements Panhandles {
         }
 
         /*----------------------------
-         * Plus Pack Options
+         * Pro Pack Options
          */
-        if ($this->plus_pack_enabled) {
+        if ($this->pro_pack_enabled) {
             if (isset($this->min_price) && ($this->min_price > 0)) {
                 $options[sprintf('itemFilter(%d).name',$filterCount)] = 'MinPrice';
                 $options[sprintf('itemFilter(%d).value(0)',$filterCount)] = $this->min_price;
@@ -350,9 +350,9 @@ final class eBayDriver implements Panhandles {
 
 
         /*----------------------------
-         * Plus Pack Options
+         * Pro Pack Options
          */
-        if ($this->plus_pack_enabled  && isset($this->detailed_listings) && $this->detailed_listings) {
+        if ($this->pro_pack_enabled  && isset($this->detailed_listings) && $this->detailed_listings) {
             $theDesc .= $this->FormatListEntry('Item ID',(string) $item->itemId);
             $theDesc .= $this->FormatListEntry('Returns Allowed: ',((string) $item->listingInfo->returnsAccepted === 'true') ? 'Yes' : 'No');
         }
