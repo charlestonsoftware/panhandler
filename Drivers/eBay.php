@@ -125,7 +125,26 @@ final class eBayDriver implements Panhandles {
         foreach ($options as $name => $value) {
             $this->$name = $value;
         }
+
+
+        // Add filters and hooks
+        //
+        if ($this->pro_pack_enabled) {
+            add_filter($this->prefix.'_money_prefix',array($this,'money_prefix_filter'));
+        }
     }
+
+
+    /**
+     * Change the money prefix in wpCSL default to whatever the user picked.
+     *
+     * @param string $prefix
+     * @return string
+     */
+    function money_prefix_filter($prefix='') {
+        return $this->money_prefix;
+    }
+
 
     //// INTERFACE METHODS /////////////////////////////////////
 
