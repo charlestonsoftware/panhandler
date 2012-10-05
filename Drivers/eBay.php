@@ -345,9 +345,12 @@ final class eBayDriver implements Panhandles {
 
         // Standard Description
         //
-        $theDesc .= $this->FormatListEntry('Buy It Now',((string) $item->listingInfo->buyItNowAvailable === 'true') ? 'Yes' : 'No');
+        $theDesc .= $this->FormatListEntry('Buy It Now',
+                            ((string) $item->listingInfo->buyItNowAvailable === 'true') ?
+                                'Yes' :
+                                'No'
+                            );
         $theDesc .= $this->FormatListEntry('Number of Bids',(string) ($item->listingInfo->bidCount > 0) ? $item->listingInfo->bidCount : '0');
-
 
         /*----------------------------
          * Pro Pack Options
@@ -358,6 +361,8 @@ final class eBayDriver implements Panhandles {
         }
 
         $theDesc .= '</div><div class="csl_themes-row"></div>';
+
+        $theDesc .= '<pre>' . print_r($item->listingInfo,true) . '</pre>';
 
         // $theDesc .= '<pre>' . print_r($item,true) . '</pre>';
 
