@@ -45,8 +45,10 @@ final class eBayDriver implements Panhandles {
         'category_id',
         'min_price',
         'max_price',
+        'money_prefix',
         'search_description',
         'sellers',
+        'show_bin_price',
         'sort_order',
     );
 
@@ -96,6 +98,9 @@ final class eBayDriver implements Panhandles {
      *
      */
     private $sort_order = null;
+
+    private $money_prefix = '$';        // Character to prefix money output
+    private $show_bin_price = false;    // Show the BIN price next to the BIN flag
 
     //// CONSTRUCTOR ///////////////////////////////////////////
 
@@ -345,9 +350,15 @@ final class eBayDriver implements Panhandles {
 
         // Standard Description
         //
+        $binYesStr = 'Yes' .
+                      (($this->pro_pack_enabled && $this->show_bin_price) ?
+                        ' '. $this->money_prefix . (string) $item->listingInfo->buyItNowPrice :
+                        ''
+                      )
+                ;
         $theDesc .= $this->FormatListEntry('Buy It Now',
                             ((string) $item->listingInfo->buyItNowAvailable === 'true') ?
-                                'Yes' :
+                                $binYesStr :
                                 'No'
                             );
         $theDesc .= $this->FormatListEntry('Number of Bids',(string) ($item->listingInfo->bidCount > 0) ? $item->listingInfo->bidCount : '0');
@@ -362,7 +373,7 @@ final class eBayDriver implements Panhandles {
 
         $theDesc .= '</div><div class="csl_themes-row"></div>';
 
-        $theDesc .= '<pre>' . print_r($item->listingInfo,true) . '</pre>';
+//        $theDesc .= '<pre>' . print_r($item->listingInfo,true) . '</pre>';
 
         // $theDesc .= '<pre>' . print_r($item,true) . '</pre>';
 
