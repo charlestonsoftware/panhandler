@@ -34,7 +34,7 @@ final class AmazonDriver implements Panhandles {
         'wait_for'          => 30,        
         
          'AWSAcessKeyId'    => '',
-         'AssociateTag'     => 'cybsprlab-20',
+         'AssociateTag'     => 'charlesof-20',
          'keywords'         => 'WordPress',
          'Operation'        => '',
          'ResponseGroup'    => '',
@@ -248,7 +248,14 @@ final class AmazonDriver implements Panhandles {
                                 true
                                 )
                             );
-        
+
+print  "<pre>".
+        'http://' . $this->options['amazon_site'] . '/onca/xml?' .
+                    $query . '&Signature=' . urlencode($hash) .
+        "</pre>"
+         ;
+
+
         // Put together the final query
         return 'http://' . $this->options['amazon_site'] . '/onca/xml?' .                 
                     $query . '&Signature=' . urlencode($hash);
