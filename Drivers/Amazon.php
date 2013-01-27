@@ -290,11 +290,19 @@ final class AmazonDriver implements Panhandles {
                 if ($result['response']['code'] > 400) {
                     throw new PanhandlerError($result['body']);
                     if ($this->options['debugging']) {
-                        print $result['body']."<br/>\n";
+                        print "<pre>Error Response:\n".print_r($result,true).'</pre>';;
                     }
                     
                     return '';
-                }                              
+                }
+
+                // Normal response debug
+                //
+                if ($this->options['debugging']) {
+                    $xmlDoc = DOMDocument::loadXML($result['body']);
+                    $xmlDoc->formatOutput = true;
+                    print '<pre>'.htmlentities($xmlDoc->saveXML()).'</pre>';
+                }
                                 
                 // OK - Continue parsing
                 //
