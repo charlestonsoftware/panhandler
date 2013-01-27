@@ -106,7 +106,6 @@ final class AmazonDriver implements Panhandles {
         foreach ($options as $name => $value) {
             $this->options[$name] = $value;
         }
-
     }
 
     //// INTERFACE METHODS /////////////////////////////////////
@@ -156,7 +155,7 @@ final class AmazonDriver implements Panhandles {
         //
         $this->options['Operation']     = 'ItemSearch';
         $this->options['Service']       = 'AWSECommerceService';
-        $this->options['ResponseGroup'] = 'Medium,Images,Variations,EditorialReview';
+        //$this->options['ResponseGroup'] = 'Medium,Images,Variations,EditorialReview';
         
 
         return $this->extract_products(
@@ -249,14 +248,6 @@ final class AmazonDriver implements Panhandles {
                                 )
                             );
 
-         if (get_option('mpamz_debuggin') === 'on') {
-            print  "<pre>".
-                    'http://' . $this->options['amazon_site'] . '/onca/xml?' .
-                                $query . '&Signature=' . urlencode($hash) .
-                    "</pre>"
-                     ;
-         }
-
         // Put together the final query
         return 'http://' . $this->options['amazon_site'] . '/onca/xml?' .                 
                     $query . '&Signature=' . urlencode($hash);
@@ -298,7 +289,7 @@ final class AmazonDriver implements Panhandles {
                 //
                 if ($result['response']['code'] > 400) {
                     throw new PanhandlerError($result['body']);
-                    if ($this->options['debugging'] == 'on') {
+                    if ($this->options['debugging']) {
                         print $result['body']."<br/>\n";
                     }
                     
@@ -331,7 +322,7 @@ final class AmazonDriver implements Panhandles {
         // No HTTP Handler
         //
         } else {
-            if ($this->options['debugging'] == 'on') {
+            if ($this->options['debugging']) {
                 _e('No HTTP Handler available, cannot communicate with remote server.',
                     MP_AMZ_PREFIX);
                 print "<br/>\n";
