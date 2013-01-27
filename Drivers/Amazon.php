@@ -249,14 +249,13 @@ final class AmazonDriver implements Panhandles {
                                 )
                             );
 
-        /**
-         * DEBUG
-print  "<pre>".
-        'http://' . $this->options['amazon_site'] . '/onca/xml?' .
-                    $query . '&Signature=' . urlencode($hash) .
-        "</pre>"
-         ;
-**/
+         if (get_option('mpamz_debuggin') === 'on') {
+            print  "<pre>".
+                    'http://' . $this->options['amazon_site'] . '/onca/xml?' .
+                                $query . '&Signature=' . urlencode($hash) .
+                    "</pre>"
+                     ;
+         }
 
         // Put together the final query
         return 'http://' . $this->options['amazon_site'] . '/onca/xml?' .                 
