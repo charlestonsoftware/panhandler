@@ -155,7 +155,7 @@ final class AmazonDriver implements Panhandles {
         //
         $this->options['Operation']     = 'ItemSearch';
         $this->options['Service']       = 'AWSECommerceService';
-        //$this->options['ResponseGroup'] = 'Medium,Images,Variations,EditorialReview';
+        $this->options['ResponseGroup'] = 'Medium,Images,Variations,EditorialReview';
         
 
         return $this->extract_products(
